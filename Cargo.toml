@@ -1,3 +1,4 @@
+# GAME BINARY
 [package]
 name = "bevy_new_third_person"
 edition.workspace = true
@@ -15,14 +16,13 @@ asset_loading = { path = "crates/asset_loading" }
 models = { path = "crates/models" }
 screens = { path = "crates/screens" }
 ui = { path = "crates/ui" }
-
-bevy_simple_subsecond_system.workspace = true
 bevy.workspace = true
 image.workspace = true
 winit.workspace = true
 
 
 
+# WORKSPACE CONFIGURATION
 [workspace.package]
 edition = "2024"
 version = "0.1.4"
@@ -52,7 +52,6 @@ dev_native = [
     "bevy/embedded_watcher",        # Enable embedded asset hot reloading for native dev builds.
     "bevy/file_watcher",            # Enable asset hot reloading for native dev builds.
     "asset_loading/dev_native",     # hot reload asset if they change
-    # "game/dev_native"               # dev tools like UI debug, screen transition logging and entity inspector
 ]
 enhanced = [
     "bevy/meshlet",                 # new nanite-like rendering system
@@ -106,9 +105,6 @@ features = [
 # stupid gltf 180 rotation fix
 bevy_fix_gltf_coordinate_system = "0.1"
 bevy_fix_cursor_unlock_web = "0.1"
-
-# hot reloading stuff
-bevy_simple_subsecond_system = "0.2.0"
 
 # plugins
 avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"] } # physics
