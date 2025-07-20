@@ -57,7 +57,7 @@ impl Default for Settings {
     }
 }
 
-fn inject_settings_from_cfg(mut commands: Commands, cfg: Res<Config>) {
+fn inject_settings_from_cfg(mut commands: Commands) {
     let settings = match Settings::read() {
         Ok(settings) => {
             info!("loaded settings from '{SETTINGS_PATH}'");
@@ -69,10 +69,7 @@ fn inject_settings_from_cfg(mut commands: Commands, cfg: Res<Config>) {
         }
     };
 
-    commands.insert_resource(Settings {
-        sound: cfg.sound.clone(),
-        ..settings
-    });
+    commands.insert_resource(settings);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect, Component)]

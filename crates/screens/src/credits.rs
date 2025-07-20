@@ -10,8 +10,7 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-#[hot]
-fn spawn_credits_screen(mut commands: Commands, cfg: Res<Config>) {
+fn spawn_credits_screen(mut commands: Commands, credits: Res<Credits>) {
     commands.spawn((
         StateScoped(Screen::Credits),
         Name::new("Credits Screen"),
@@ -29,9 +28,9 @@ fn spawn_credits_screen(mut commands: Commands, cfg: Res<Config>) {
         BackgroundColor(TRANSLUCENT),
         children![
             header("Breated by"),
-            flatten(&cfg.credits.devs),
+            flatten(&credits.devs),
             header("Assets"),
-            flatten(&cfg.credits.assets),
+            flatten(&credits.assets),
             btn_big("Back", to::title),
         ],
     ));
@@ -74,12 +73,13 @@ fn start_credits_music(
     mut commands: Commands,
     settings: Res<Settings>,
     sources: ResMut<AudioSources>,
-    mut bg_music: Query<&mut PlaybackSettings, With<Music>>,
+    mut music: Query<&mut PlaybackSettings, With<Music>>,
 ) {
-    for mut s in bg_music.iter_mut() {
+    for mut s in music.iter_mut() {
         s.pause();
     }
-    let handle = sources.bg_music.clone();
+
+    let handle = sources.explore[0].clone();
     commands.spawn((
         StateScoped(Screen::Credits),
         Name::new("Credits Music"),

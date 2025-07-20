@@ -4,7 +4,6 @@ use asset_loading::*;
 use audio::*;
 use bevy::{prelude::*, ui::Val::*};
 use bevy_seedling::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
 use models::*;
 use ui::*;
 
@@ -58,7 +57,7 @@ fn on_back(
     next_screen.set(back.0.clone());
 }
 
-pub fn on_go_to(trig: Trigger<OnGoTo>, mut next_screen: ResMut<NextState<Screen>>) {
+pub fn on_go_to(trig: Trigger<GoTo>, mut next_screen: ResMut<NextState<Screen>>) {
     let go_to = trig.event();
     next_screen.set(go_to.0.clone());
 }
@@ -71,13 +70,13 @@ pub mod to {
     use super::*;
 
     pub fn title(_: Trigger<OnPress>, mut cmds: Commands) {
-        cmds.trigger(OnGoTo(Screen::Title));
+        cmds.trigger(GoTo(Screen::Title));
     }
     pub fn settings(_: Trigger<OnPress>, mut cmds: Commands) {
-        cmds.trigger(OnGoTo(Screen::Settings));
+        cmds.trigger(GoTo(Screen::Settings));
     }
     pub fn credits(_: Trigger<OnPress>, mut cmds: Commands) {
-        cmds.trigger(OnGoTo(Screen::Credits));
+        cmds.trigger(GoTo(Screen::Credits));
     }
     pub fn gameplay_or_loading(
         _: Trigger<OnPress>,

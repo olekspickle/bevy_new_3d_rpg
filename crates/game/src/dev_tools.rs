@@ -18,6 +18,6 @@ pub(super) fn plugin(app: &mut App) {
         .add_observer(toggle_debug_ui);
 }
 
-fn toggle_debug_ui(_: Trigger<OnDebugUiToggle>, mut options: ResMut<UiDebugOptions>) {
+fn toggle_debug_ui(_: Trigger<ToggleDebugUi>, mut options: ResMut<UiDebugOptions>) {
     options.toggle();
 }

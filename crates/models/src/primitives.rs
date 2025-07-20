@@ -13,7 +13,6 @@ macro_rules! declare_markers {
 
 declare_markers!(
     SceneCamera,
-    BgMusic,
     // scene
     Sun,
     Moon,
@@ -43,7 +42,10 @@ declare_markers!(
     DiagnosticsLabel,
     DebugUiLabel,
     SaveSettingsLabel,
-    FovLabel
+    FovLabel,
+    // animations
+    FadeIn,
+    FadeOut
 );
 
 macro_rules! timers {

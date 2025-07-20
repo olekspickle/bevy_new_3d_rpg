@@ -16,7 +16,6 @@ asset_loading = { path = "../asset_loading" }
 models = { path = "../models" }
 
 bevy.workspace = true
-bevy_simple_subsecond_system.workspace = true
 bevy_enhanced_input.workspace = true
 bevy_seedling.workspace = true
 iyes_perf_ui.workspace = true

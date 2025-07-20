@@ -1,7 +1,8 @@
 use super::*;
+use std::collections::HashMap;
 
 pub fn plugin(app: &mut App) {
-    app.init_resource::<GameState>();
+    app.init_resource::<GameState>().init_resource::<Moods>();
 }
 
 #[derive(Resource, Reflect, Debug, Clone)]
@@ -11,6 +12,7 @@ pub struct GameState {
     /// Only relevant in [`Screen::Gameplay`]
     pub modals: Vec<Modal>,
     pub last_screen: Screen,
+    pub current_mood: MoodType,
 
     pub diagnostics: bool,
     pub debug_ui: bool,
@@ -23,6 +25,7 @@ impl Default for GameState {
         Self {
             modals: vec![],
             last_screen: Screen::Title,
+            current_mood: MoodType::Exploration,
             diagnostics: true,
             debug_ui: false,
             paused: false,
@@ -37,4 +40,36 @@ impl GameState {
         self.paused = false;
         self.muted = false;
     }
+}
+
+/// The game's main screen states.
+/// See <https://bevy-cheatbook.github.io/programming/states.html>
+/// Or <https://github.com/bevyengine/bevy/blob/main/examples/ecs/state.rs>
+#[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash, Reflect)]
+pub enum Screen {
+    // Bevy tribute <3
+    #[default]
+    Splash,
+    // During the loading State the LoadingPlugin will load our assets
+    Loading,
+    Tutorial,
+    Credits,
+    Settings,
+    // Here the menu is drawn and waiting for player interaction
+    Title,
+    // During this State the actual game logic is executed
+    Gameplay,
+}
+
+#[derive(Resource, Reflect, Debug, Clone, Default)]
+#[reflect(Resource)]
+pub struct Moods {
+    pub inner: HashMap<MoodType, Entity>,
+}
+
+#[derive(Default, Clone, Eq, PartialEq, Debug, Hash, Reflect)]
+pub enum MoodType {
+    #[default]
+    Exploration,
+    Combat,
 }

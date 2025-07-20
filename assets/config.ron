@@ -1,4 +1,7 @@
 (
+    camera: (
+        speed: 0.5,
+    ),
     player:(
         spawn_pos: (1.5, 60, 0.5),
         fov: 60,

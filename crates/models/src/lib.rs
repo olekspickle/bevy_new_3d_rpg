@@ -34,25 +34,6 @@ pub fn plugin(app: &mut App) {
     ));
 }
 
-/// The game's main screen states.
-/// See <https://bevy-cheatbook.github.io/programming/states.html>
-/// Or <https://github.com/bevyengine/bevy/blob/main/examples/ecs/state.rs>
-#[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash, Serialize, Deserialize, Reflect)]
-pub enum Screen {
-    // Bevy tribute <3
-    #[default]
-    Splash,
-    // During the loading State the LoadingPlugin will load our assets
-    Loading,
-    Tutorial,
-    Credits,
-    Settings,
-    // Here the menu is drawn and waiting for player interaction
-    Title,
-    // During this State the actual game logic is executed
-    Gameplay,
-}
-
 /// High-level groupings of systems for the app in the `Update` schedule.
 /// When adding a new variant, make sure to order it in the `configure_sets`
 /// call above.

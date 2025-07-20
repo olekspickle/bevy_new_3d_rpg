@@ -2,47 +2,58 @@ use super::*;
 
 pub fn plugin(app: &mut App) {
     app.add_event::<Back>()
-        .add_event::<OnGoTo>()
+        .add_event::<GoTo>()
+        .add_event::<OnPress>()
         .add_event::<SwitchInputCtx>()
-        .add_event::<OnSwitchTab>()
-        .add_event::<OnNewModal>()
-        .add_event::<OnPopModal>()
-        .add_event::<OnClearModals>()
-        .add_event::<OnPauseToggle>()
-        .add_event::<OnMuteToggle>()
-        .add_event::<OnFovIncrement>()
-        .add_event::<OnCamCursorToggle>()
-        .add_event::<OnDebugUiToggle>()
-        .add_event::<OnDiagnosticsToggle>()
+        .add_event::<ChangeMood>()
+        .add_event::<SwitchTab>()
+        .add_event::<NewModal>()
+        .add_event::<PopModal>()
+        .add_event::<ClearModals>()
+        .add_event::<FovIncrement>()
+        .add_event::<CamCursorToggle>()
+        .add_event::<ToggleVsync>()
+        .add_event::<ToggleMute>()
+        .add_event::<TogglePause>()
+        .add_event::<ToggleDebugUi>()
+        .add_event::<ToggleDiagnostics>()
         .add_observer(pause)
         .add_observer(mute)
         .add_observer(back);
 }
 
 #[derive(Event)]
-pub struct OnGoTo(pub Screen);
+pub struct GoTo(pub Screen);
 #[derive(Event)]
 pub struct Back(pub Screen);
 #[derive(Event, Deref)]
-pub struct OnSwitchTab(pub UiTab);
+pub struct SwitchTab(pub UiTab);
 #[derive(Event, Deref)]
-pub struct OnNewModal(pub Modal);
+pub struct NewModal(pub Modal);
 #[derive(Event)]
-pub struct OnPopModal;
+pub struct PopModal;
 #[derive(Event)]
-pub struct OnClearModals;
+pub struct ClearModals;
 #[derive(Event)]
-pub struct OnCamCursorToggle;
+pub struct CamCursorToggle;
 #[derive(Event)]
-pub struct OnFovIncrement;
+pub struct FovIncrement;
 #[derive(Event)]
-pub struct OnPauseToggle;
+pub struct ToggleVsync;
 #[derive(Event)]
-pub struct OnMuteToggle;
+pub struct TogglePause;
 #[derive(Event)]
-pub struct OnDiagnosticsToggle;
+pub struct ToggleMute;
 #[derive(Event)]
-pub struct OnDebugUiToggle;
+pub struct ToggleDiagnostics;
+#[derive(Event)]
+pub struct ToggleDebugUi;
+#[derive(Event)]
+pub struct ChangeMood(pub MoodType);
+/// Event triggered on a UI entity when the [`Interaction`] component on the same entity changes to
+/// [`Interaction::Pressed`]. Observe this event to detect e.g. button presses.
+#[derive(Event)]
+pub struct OnPress;
 #[derive(Event)]
 pub struct SwitchInputCtx {
     pub ctx: Context,
@@ -60,6 +71,7 @@ impl SwitchInputCtx {
     }
 }
 
+// ================== trigger events on input ========================
 fn back(
     _: Trigger<Started<Escape>>,
     screen: Res<State<Screen>>,
@@ -74,10 +86,9 @@ fn back(
         }
     }
 }
-
 fn pause(_: Trigger<Started<Pause>>, mut commands: Commands) {
-    commands.trigger(OnPauseToggle);
+    commands.trigger(TogglePause);
 }
 fn mute(_: Trigger<Started<Mute>>, mut commands: Commands) {
-    commands.trigger(OnMuteToggle);
+    commands.trigger(ToggleMute);
 }

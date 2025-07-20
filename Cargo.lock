@@ -3017,6 +3017,7 @@ dependencies = [
  "avian3d",
  "bevy",
  "bevy-inspector-egui",
+ "bevy_enhanced_input",
  "bevy_seedling",
  "bevy_third_person_camera",
  "models",

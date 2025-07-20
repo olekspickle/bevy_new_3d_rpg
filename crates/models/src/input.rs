@@ -15,9 +15,16 @@ fn spawn_ctx(mut cmds: Commands) {
 }
 
 /// Context switch observer
-/// We need global context to handle input on main menu, when no players spawned yet
-/// but we have to reset it manually
-/// TODO: check when split screen ready
+/// If event entity is the [`Entity`] placeholder it is meant for global context entity
+/// [`InputContext`] which is mostly needed for game UI when no player spawned yet.
+///
+/// We could just have one context for everything, but I plan to support split screen
+/// and changing context on player is useful for different cases like driving,
+/// swimming, so I find this setup the most reasonable.
+///
+/// TODO: check with split screen
+/// TODO: I'm pretty sure there is a better way to organize this, but I'm not familiar enough with
+/// [`bevy_enhanced_input`] yet to figure it out, so for now it works
 fn on_ctx_switch(
     on: Trigger<SwitchInputCtx>,
     mut commands: Commands,
@@ -31,15 +38,11 @@ fn on_ctx_switch(
         // global context reset
         if let Ok(global_ctx) = global_ctx.single_mut() {
             match new_ctx {
-                Context::Modal => {
-                    commands
-                        .entity(global_ctx)
-                        .insert(Actions::<ModalCtx>::default());
-                }
-                Context::Gameplay => {
-                    commands.entity(global_ctx).remove::<Actions<ModalCtx>>();
-                }
-            }
+                Context::Modal => commands
+                    .entity(global_ctx)
+                    .insert(Actions::<ModalCtx>::default()),
+                Context::Gameplay => commands.entity(global_ctx).remove::<Actions<ModalCtx>>(),
+            };
 
             info!("Switched global context to {:?}", new_ctx);
         }
@@ -90,7 +93,7 @@ pub struct Navigate;
 
 #[derive(Debug, InputAction)]
 #[input_action(output = Vec2, require_reset = true)]
-pub struct Rotate;
+pub struct Pan;
 
 #[derive(Debug, InputAction)]
 #[input_action(output = bool)]
@@ -163,7 +166,7 @@ fn bind_gameplay(
             Scale::splat(0.3), // Additionally multiply by a constant to achieve the desired speed.
         ));
 
-    actions.bind::<Rotate>().to((
+    actions.bind::<Pan>().to((
         Input::mouse_motion().with_modifiers((Scale::splat(0.1), Negate::all())),
         Axial::right_stick().with_modifiers_each((Scale::splat(2.0), Negate::x())),
     ));

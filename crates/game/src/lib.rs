@@ -2,6 +2,7 @@ use asset_loading::*;
 use audio::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use bevy_enhanced_input::prelude::*;
 use bevy_seedling::prelude::*;
 use models::*;
 use scene::*;
@@ -9,7 +10,7 @@ use scene::*;
 mod camera;
 #[cfg(feature = "dev_native")]
 mod dev_tools;
-mod sound;
+mod mood;
 
 pub use camera::*;
 
@@ -20,7 +21,7 @@ pub fn plugin(app: &mut App) {
         camera::plugin,
         scene::plugin,
         player::plugin,
-        sound::plugin,
+        mood::plugin,
         #[cfg(feature = "dev_native")]
         dev_tools::plugin,
     ));

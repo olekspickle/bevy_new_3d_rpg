@@ -3,7 +3,6 @@ use audio::*;
 use bevy::{prelude::*, ui::Val::*};
 use bevy_enhanced_input::prelude::*;
 use bevy_seedling::prelude::*;
-use bevy_simple_subsecond_system::prelude::*;
 use models::*;
 
 mod interaction;

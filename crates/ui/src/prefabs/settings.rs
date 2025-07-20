@@ -1,5 +1,8 @@
 use super::*;
-use bevy::ui::Display as NodeDisplay;
+use bevy::{
+    ui::Display as NodeDisplay,
+    window::{PresentMode, PrimaryWindow},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -43,7 +46,6 @@ pub fn save_settings(
 }
 
 // TAB CHANGING
-#[hot]
 fn update_tab_content(
     settings: Res<Settings>,
     active_tab: Res<ActiveTab>,
@@ -182,6 +184,7 @@ fn update_music_volume_label(
     settings: Res<Settings>,
     mut label: Single<&mut Text, With<MusicVolumeLabel>>,
 ) {
+    info!("music volume: {}", settings.sound.music);
     let percent = (settings.sound.music * 100.0).round();
     let text = format!("{percent: <3}%");
     label.0 = text;
@@ -227,6 +230,22 @@ fn switch_to_tab(tab: UiTab) -> impl Fn(Trigger<Pointer<Click>>, ResMut<ActiveTa
     }
 }
 
+fn click_toggle_vsync(
+    _: Trigger<Pointer<Click>>,
+    mut windows: Query<&mut Window, With<PrimaryWindow>>,
+) -> Result {
+    for mut window in windows.iter_mut() {
+        if matches!(window.present_mode, PresentMode::AutoVsync) {
+            window.present_mode = PresentMode::AutoNoVsync;
+        } else {
+            window.present_mode = PresentMode::AutoVsync;
+        }
+        info!(" window present_mode changed to: {:?}", window.present_mode);
+    }
+
+    Ok(())
+}
+
 fn click_toggle_diagnostics(
     _: Trigger<Pointer<Click>>,
     mut commands: Commands,
@@ -251,7 +270,7 @@ fn click_toggle_diagnostics(
             info!("new label: {}", label.0);
         }
         state.diagnostics = !state.diagnostics;
-        commands.trigger(OnDiagnosticsToggle);
+        commands.trigger(ToggleDiagnostics);
     }
 }
 
@@ -272,7 +291,7 @@ fn clock_toggle_debug_ui(
         }
         info!("new label: {}", label.0);
     }
-    commands.trigger(OnDebugUiToggle);
+    commands.trigger(ToggleDebugUi);
 }
 
 fn click_toggle_sun_cycle(
@@ -309,7 +328,7 @@ fn click_toggle_settings(
     if *screen.get() == Screen::Settings {
         next_screen.set(Screen::Title);
     } else {
-        cmds.trigger(OnPopModal);
+        cmds.trigger(PopModal);
     }
 }
 
@@ -412,9 +431,11 @@ fn video_grid(cycle: &SunCycle) -> impl Bundle {
             (btn(cycle.as_str(), click_toggle_sun_cycle), SunCycleLabel),
             label("FOV"),
             fov(),
-            // TODO: do checkboxes
+            // TODO: do checkboxes when feathers
             label("diagnostics"),
             (btn("on", click_toggle_diagnostics), DiagnosticsLabel),
+            label("VSync"),
+            (btn("on", click_toggle_vsync), DiagnosticsLabel),
             #[cfg(feature = "dev_native")]
             label("debug ui"),
             #[cfg(feature = "dev_native")]

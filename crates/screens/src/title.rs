@@ -6,7 +6,7 @@ pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Title), setup_menu);
 }
 
-fn setup_menu(mut commands: Commands) {
+fn setup_menu(mut commands: Commands, mut state: ResMut<GameState>) {
     commands.spawn((
         StateScoped(Screen::Title),
         ui_root("Title UI"),
@@ -41,6 +41,8 @@ fn setup_menu(mut commands: Commands) {
             ],
         )],
     ));
+
+    state.reset();
 }
 
 #[cfg(not(target_arch = "wasm32"))]
