@@ -136,5 +136,7 @@ fn player_post_spawn(
         p.id = player; // update player id with spawned entity
     }
     commands.trigger(SwitchInputCtx::new(player, Context::Gameplay));
+    // We need global context to handle input on main menu, when no players spawned yet
+    // but we have to reset it manually when one is spawned
     commands.trigger(SwitchInputCtx::from_context(Context::Gameplay));
 }

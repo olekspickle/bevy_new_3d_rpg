@@ -1,5 +1,8 @@
 //! At the time of writing bevy_common_assets did not migrate to 0.16
-//! And the way it restricts plugin to a single generic struct doesn't really makes sense to me
+//! and the way it restricts plugin to a single generic struct while
+//! still requiring extention list doesn't really makes sense to me.
+//!
+//! This is a simplified ron loader from bevy_common_assets
 use bevy::{
     asset::{Asset, AssetApp, AssetLoader, LoadContext, io::Reader},
     prelude::*,
@@ -8,10 +11,8 @@ use std::marker::PhantomData;
 use thiserror::Error;
 
 /// Plugin to load your asset type `A` from ron files.
-pub struct RonAssetPlugin<A> {
-    extensions: Vec<&'static str>,
-    _marker: PhantomData<A>,
-}
+#[derive(Default)]
+pub struct RonAssetPlugin<A>(PhantomData<A>);
 
 impl<A> Plugin for RonAssetPlugin<A>
 where
@@ -19,31 +20,12 @@ where
 {
     fn build(&self, app: &mut App) {
         app.init_asset::<A>()
-            .register_asset_loader(RonAssetLoader::<A> {
-                extensions: self.extensions.clone(),
-                _marker: PhantomData,
-            });
-    }
-}
-
-impl<A> RonAssetPlugin<A>
-where
-    for<'de> A: serde::Deserialize<'de> + Asset,
-{
-    /// Create a new plugin that will load assets from files with the given extensions.
-    pub fn new(extensions: &[&'static str]) -> Self {
-        Self {
-            extensions: extensions.to_owned(),
-            _marker: PhantomData,
-        }
+            .register_asset_loader(RonAssetLoader::<A>(PhantomData));
     }
 }
 
 /// Loads your asset type `A` from ron files
-pub struct RonAssetLoader<A> {
-    extensions: Vec<&'static str>,
-    _marker: PhantomData<A>,
-}
+pub struct RonAssetLoader<A>(PhantomData<A>);
 
 /// Possible errors that can be produced by [`RonAssetLoader`]
 #[non_exhaustive]
@@ -75,10 +57,6 @@ where
         reader.read_to_end(&mut bytes).await?;
         let asset = ron::de::from_bytes::<A>(&bytes)?;
         Ok(asset)
-    }
-
-    fn extensions(&self) -> &[&str] {
-        &self.extensions
     }
 }
 
