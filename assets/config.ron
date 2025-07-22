@@ -1,6 +1,12 @@
 (
     camera: (
-        speed: 0.5,
+        // top down config
+        height: 20.0,
+        speed: 20.0,
+        edge_margin: 20.0,
+        zoom_speed: 5.0,
+        min_height: 5.0,
+        max_height: 50.0,
     ),
     player:(
         spawn_pos: (1.5, 60, 0.5),

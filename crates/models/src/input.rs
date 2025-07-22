@@ -96,6 +96,10 @@ pub struct Navigate;
 pub struct Pan;
 
 #[derive(Debug, InputAction)]
+#[input_action(output = Vec2, require_reset = true)]
+pub struct ScrollZoom;
+
+#[derive(Debug, InputAction)]
 #[input_action(output = bool)]
 pub struct Attack;
 
@@ -170,6 +174,8 @@ fn bind_gameplay(
         Input::mouse_motion().with_modifiers((Scale::splat(0.1), Negate::all())),
         Axial::right_stick().with_modifiers_each((Scale::splat(2.0), Negate::x())),
     ));
+
+    actions.bind::<ScrollZoom>().to(Input::mouse_wheel());
 
     actions.bind::<Pause>().to(KeyCode::KeyP);
     actions.bind::<Mute>().to(KeyCode::KeyM);

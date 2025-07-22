@@ -13,8 +13,8 @@ pub(super) fn plugin(app: &mut App) {
         .add_observer(clear_modals);
 }
 
-fn spawn_gameplay_ui(mut cmds: Commands, textures: Res<Textures>, settings: Res<Settings>) {
-    info!("settings on gameplay enter:{settings:?}");
+fn spawn_gameplay_ui(mut cmds: Commands, textures: Res<Textures>, _settings: Res<Settings>) {
+    // info!("settings on gameplay enter:{settings:?}");
     let opts = Opts::default().hidden().width(Vw(5.0)).height(Vw(5.0));
     cmds.spawn((
         StateScoped(Screen::Gameplay),

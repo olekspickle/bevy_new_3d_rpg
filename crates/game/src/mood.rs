@@ -2,7 +2,7 @@
 use super::*;
 use rand::prelude::*;
 
-const FADE_TIME: f32 = 2.0;
+// const FADE_TIME: f32 = 2.0;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnExit(Screen::Gameplay), stop_soundtrack)
