@@ -99,6 +99,11 @@ pub struct Pan;
 #[input_action(output = Vec2, require_reset = true)]
 pub struct ScrollZoom;
 
+// #[cfg(feature = "top_down")]
+#[derive(Debug, InputAction)]
+#[input_action(output = bool)]
+pub struct RotateToggle;
+
 #[derive(Debug, InputAction)]
 #[input_action(output = bool)]
 pub struct Attack;
@@ -176,6 +181,9 @@ fn bind_gameplay(
     ));
 
     actions.bind::<ScrollZoom>().to(Input::mouse_wheel());
+
+    // #[cfg(feature = "top_down")]
+    actions.bind::<RotateToggle>().to(MouseButton::Right);
 
     actions.bind::<Pause>().to(KeyCode::KeyP);
     actions.bind::<Mute>().to(KeyCode::KeyM);

@@ -7,7 +7,7 @@ edition.workspace = true
 
 # TODO: figure out the best way to enable stuff like inspector or ui debug option only in dev builds
 [features]
-default = ["dev_native", "third_person"]
+default = ["dev_native", "top_down"]
 dev_native = [ "bevy-inspector-egui" ]
 third_person = ["bevy_third_person_camera"]
 top_down = []

@@ -18,9 +18,14 @@ pub fn plugin(app: &mut App) {
         .add_observer(toggle_cam_cursor);
 
     #[cfg(feature = "top_down")]
-    app.add_systems(OnEnter(Screen::Gameplay), move_camera_to_top_down)
-        .add_observer(camera_mouse_pan)
-        .add_observer(camera_zoom);
+    app.add_systems(
+        OnEnter(Screen::Gameplay),
+        sync_camera_to_player.after(player::spawn_player),
+    )
+    .add_observer(camera_mouse_pan)
+    .add_observer(camera_to_rotate)
+    .add_observer(camera_to_move)
+    .add_observer(camera_zoom);
 }
 
 pub fn spawn_camera(mut commands: Commands) {
@@ -102,14 +107,29 @@ fn toggle_cam_cursor(_: Trigger<CamCursorToggle>, mut cam: Query<&mut ThirdPerso
 }
 
 #[cfg(feature = "top_down")]
-fn move_camera_to_top_down(cfg: Res<Config>, mut camera: Query<&mut Transform, With<SceneCamera>>) {
+fn sync_camera_to_player(
+    cfg: Res<Config>,
+    state: Res<GameState>,
+    player: Query<&mut Transform, (With<Player>, Without<SceneCamera>)>,
+    mut camera: Query<&mut Transform, (With<SceneCamera>, Without<Player>)>,
+) {
     let Ok(mut cam) = camera.single_mut() else {
         return;
     };
+    let Ok(player) = player.single() else {
+        return;
+    };
 
-    // *cam = Transform::from_xyz(0.0, cfg.player.spawn_pos.1 + 10.0, 0.0)
-    //     .looking_at(cfg.player.spawn_pos.into(), Vec3::Y);
-    cam.rotate_y(-0.6);
+    if state.paused {
+        return;
+    }
+
+    *cam = Transform::from_xyz(
+        player.translation.x + 50.0,
+        player.translation.y + 10.0,
+        player.translation.z - 50.0,
+    )
+    .looking_at(player.translation, Vec3::Y);
 }
 
 /// Pans the camera using mouse drag
@@ -118,6 +138,7 @@ fn camera_mouse_pan(
     on: Trigger<Fired<Pan>>,
     time: Res<Time>,
     cfg: Res<Config>,
+    state: Res<GameState>,
     windows: Query<&Window>,
     mut cam: Query<&mut Transform, With<SceneCamera>>,
 ) {
@@ -131,23 +152,38 @@ fn camera_mouse_pan(
         return;
     };
 
-    let mut movement = Vec3::ZERO;
+    match state.camera_mode {
+        CameraMode::Move => {
+            let mut movement = Vec3::ZERO;
 
-    // Check screen borders and set movement direction
-    if cursor_pos.x <= cfg.camera.edge_margin {
-        movement += Vec3::Z; // left edge → move camera left (Z+)
-    } else if cursor_pos.x >= window.width() - cfg.camera.edge_margin {
-        movement += -Vec3::Z; // right edge → move right (Z-)
-    }
+            // Check screen borders and set movement direction
+            let left = *cam.left();
+            if cursor_pos.x <= cfg.camera.edge_margin {
+                movement += left; // left edge → move camera left (Z+)
+            } else if cursor_pos.x >= window.width() - cfg.camera.edge_margin {
+                movement += -left; // right edge → move right (Z-)
+            }
 
-    if cursor_pos.y <= cfg.camera.edge_margin {
-        movement += -Vec3::X; // bottom edge → move down (X-)
-    } else if cursor_pos.y >= window.height() - cfg.camera.edge_margin {
-        movement += Vec3::X; // top edge → move up (X+)
-    }
-
-    if movement != Vec3::ZERO {
-        cam.translation += movement.normalize() * cfg.camera.speed * time.delta_secs();
+            let fwd = *cam.forward();
+            let fwd_flat = Vec3::new(fwd.x, cam.translation.y, fwd.z).normalize();
+            if cursor_pos.y <= cfg.camera.edge_margin {
+                movement += fwd_flat; // top edge → move up (X+)
+            } else if cursor_pos.y >= window.height() - cfg.camera.edge_margin {
+                movement += -fwd_flat; // bottom edge → move down (X-)
+            }
+            if movement != Vec3::ZERO {
+                cam.translation +=
+                    movement.normalize_or_zero() * cfg.camera.speed * time.delta_secs();
+            }
+        }
+        CameraMode::Rotate => {
+            let up = *cam.up();
+            let yaw_flat = Vec3::new(up.x, 0.0, up.z).normalize();
+            let yaw_rot = Quat::from_axis_angle(up, on.value.x * cfg.camera.rotate_speed);
+            let pitch_rot =
+                Quat::from_axis_angle(*cam.right(), on.value.y * cfg.camera.rotate_speed);
+            cam.rotate(yaw_rot * pitch_rot);
+        }
     }
 }
 
@@ -161,17 +197,20 @@ fn camera_zoom(
     let Ok(mut cam) = cam.single_mut() else {
         return;
     };
-    let Ok(player) = player.single() else {
-        return;
-    };
-
-    info!("scroll: {}", on.value);
 
     let new_height = (cam.translation.y - on.value.y * cfg.camera.zoom_speed)
         .clamp(cfg.camera.min_height, cfg.camera.max_height);
 
     cam.translation.y = new_height;
-    let (x, z) = (cam.translation.x, cam.translation.z);
 
     // cam.look_at(Vec3::new(x, player.translation.y, z), Vec3::X);
+}
+
+#[cfg(feature = "top_down")]
+fn camera_to_rotate(_: Trigger<Started<RotateToggle>>, mut state: ResMut<GameState>) {
+    state.camera_mode = CameraMode::Rotate;
+}
+#[cfg(feature = "top_down")]
+fn camera_to_move(_: Trigger<Completed<RotateToggle>>, mut state: ResMut<GameState>) {
+    state.camera_mode = CameraMode::Move;
 }

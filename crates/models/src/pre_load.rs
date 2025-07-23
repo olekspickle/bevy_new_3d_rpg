@@ -80,8 +80,9 @@ pub struct Timers {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Reflect)]
 pub struct Camera {
     pub speed: f32,
-    pub height: f32,
     pub zoom_speed: f32,
+    pub rotate_speed: f32,
+    pub height: f32,
     pub min_height: f32,
     pub max_height: f32,
     pub edge_margin: f32,
