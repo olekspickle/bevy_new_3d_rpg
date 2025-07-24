@@ -16,6 +16,9 @@ declare_markers!(
     // scene
     Sun,
     Moon,
+    Combat,
+    Exploration,
+    Drama,
     // TODO: The idea is to create a boombox with spatial audio
     // <https://github.com/bevyengine/bevy/blob/main/examples/audio/spatial_audio_3d.rs>
     Boombox,

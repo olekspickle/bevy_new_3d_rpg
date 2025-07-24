@@ -95,6 +95,7 @@ pub struct Navigate;
 #[input_action(output = Vec2, require_reset = true)]
 pub struct Pan;
 
+// #[cfg(feature = "top_down")]
 #[derive(Debug, InputAction)]
 #[input_action(output = Vec2, require_reset = true)]
 pub struct ScrollZoom;
@@ -180,10 +181,11 @@ fn bind_gameplay(
         Axial::right_stick().with_modifiers_each((Scale::splat(2.0), Negate::x())),
     ));
 
-    actions.bind::<ScrollZoom>().to(Input::mouse_wheel());
-
     // #[cfg(feature = "top_down")]
-    actions.bind::<RotateToggle>().to(MouseButton::Right);
+    {
+        actions.bind::<ScrollZoom>().to(Input::mouse_wheel());
+        actions.bind::<RotateToggle>().to(MouseButton::Right);
+    }
 
     actions.bind::<Pause>().to(KeyCode::KeyP);
     actions.bind::<Mute>().to(KeyCode::KeyM);

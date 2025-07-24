@@ -1,6 +1,5 @@
 use asset_loading::*;
 use audio::*;
-use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_seedling::prelude::*;
 use models::*;

@@ -1,13 +1,12 @@
 (
     camera: (
         // top down config
-        height: 20.0,
-        speed: 100.0,
-        edge_margin: 20.0,
-        zoom_speed: 5.0,
+        edge_margin: 50.0,
+        rotate_speed: 0.1,
+        zoom_speed: 10.0,
+        max_speed: 200.0,
         min_height: 5.0,
         max_height: 50.0,
-        rotate_speed: 0.01
     ),
     player:(
         spawn_pos: (1.5, 60, 0.5),
