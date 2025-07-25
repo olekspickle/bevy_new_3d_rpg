@@ -1,6 +1,6 @@
 # GAME BINARY
 [package]
-name = "bevy_new_third_person"
+name = "bevy_new_3d_rpg"
 edition.workspace = true
 version.workspace = true
 authors.workspace = true
@@ -29,7 +29,7 @@ version = "0.1.4"
 authors = ["Oleks Pickle <22867443+olekspickle@users.noreply.github.com>"]
 license = "MIT OR Apache-2.0 OR CC0"
 exclude = ["assets"]
-repository = "https://github.com/olekspickle/bevy_new_third_person"
+repository = "https://github.com/olekspickle/bevy_new_3d_rpg"
 description = "Simple third person view 3D RPG game template with gamepad support"
 keywords = ["bevy", "game", "template", "devkit", "third person", "gamedev"]
 

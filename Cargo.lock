@@ -1237,7 +1237,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_new_third_person"
+name = "bevy_new_3d_rpg"
 version = "0.1.4"
 dependencies = [
  "asset_loading",

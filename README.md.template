@@ -1,28 +1,36 @@
 # {{project-name | title_case}}
 
-This game project was generated using the [Bevy New Third Person](https://github.com/olekspickle/bevy_new_third_person) template.
+This game project was generated using the [Bevy New Third Person](https://github.com/olekspickle/bevy_new_3d_rpg) template.
 
 ## Write your game
 
 The best way to get started is to play around with the code you find in [`src/game/`](./src/game).
 This template comes with a basic project structure that you may find useful:
 
-| Path                                               | Description                                                        |
-| -------------------------------------------------- | ------------------------------------------------------------------ |
-| [`src/main.rs`](./src/main.rs)                     | App entrypoint(not much going on there)                            |
-| [`src/loading/`](./src/loading)                    | A high-level way to load collections of asset handles as resources |
-| [`src/game/`](./src/game)                          | Game mechanics & content(inputs, scene, player control & animation)|
-| [`src/audio.rs`](./src/audio.rs)                   | Marker components for sound effects and music                      |
-| [`src/dev_tools.rs`](./src/dev_tools.rs)           | Dev tools for dev builds (press \` aka backtick to toggle)         |
-| [`src/screens/`](./src/screens)                    | Splash screen, title screen, gameplay screen, etc.                 |
-| [`src/ui/`](./src/ui)                              | Reusable UI widgets & theming                                      |
+### Project structure
+
+| Path                                              | Description                                                           |
+| ------------------------------------------------- | --------------------------------------------------------------------- |
+| [`src/main.rs`](./src/main.rs)                    | App entrypoint where system plugins and window set up                 |
+| [`assets`](./assets)                              | Asset directory                                                       |
+| [`crates`](./crates)                              | A contained ordered way to improve compile times                      |
+| [`crates/asset_loading`](./crates/asset_loading)  | A high-level way to load collections of asset handles as resources    |
+| [`crates/models`](./crates/models)                | Data source for the game: inputs, markers, timers                     |
+| [`crates/audio`](./crates/audio)                  | Marker components for sound effects and music                         |
+| [`crates/screens`](./crates/screens)              | Splash/title/gameplay and other screen related systems and ui         |
+| [`crates/scene`](./crates/scene)                  | Scene setup, skybox                                                   |
+| [`crates/game`](./crates/game)                    | Game mechanics & content                                              |
+| [`crates/player`](./crates/player)                | Player control & animation                                            |
+| [`crates/ui`](./crates/ui)                        | Reusable UI widgets & game color pallet control                       |
+
 
 ## Run your game
 
-We recommend using the [Bevy CLI] to run your game.
-Running your game locally is very simple:
+There are some helpful commands in [Makefile](./Makefile) to simplify build options
+But generally running your game locally is very simple:
 
-- Use `bevy run` to run a native dev build.
+- `make run` if you have `cmake`
+- Use `bevy run` with [bevy_cli] or `cargo run` to run a native dev build.
 - Use this command to run a web dev build to run audio in separate thread to avoid audio stuttering:
 ```bash
 bevy run web --headers="Cross-Origin-Opener-Policy:same-origin" --headers="Cross-Origin-Embedder-Policy:credentialless"
@@ -63,9 +71,7 @@ There are some known issues in Bevy that can require arcane workarounds.
 
 ### My audio is stuttering on web
 
-Audio in web-builds can have issues in some browsers.
-This seems to be a general performance issue with wasm builds in all engines, the best solution is just to artificially extend loading phase(seems to be a solution people go for in other engines)
-
+This template uses firewheel experimental audio runnign in the separate worker thread, so it should not be happening, but if you experience it nevertheless, here are a few tips:
 - If you're using materials, you should force your render pipelines to [load at the start of the game]
 - Optimize your game as much as you can to keep its FPS high.
 - Apply the suggestions from the blog post [Workaround for the Choppy Music in Bevy Web Builds].
@@ -84,6 +90,10 @@ See the [`physics_in_fixed_timestep`] example for how to fix this.
 
 Choppy camera movement is almost always caused by the camera being tied too tightly to a moving target position.
 You can use [`smooth_nudge`] to make your camera smoothly approach its target position instead.
+
+## Credits
+
+The [assets](./assets) in this repository are all 3rd-party. See the see [credits](assets/credits.json) for more information.
 
 
 [Bevy CLI]: https://github.com/TheBevyFlock/bevy_cli
