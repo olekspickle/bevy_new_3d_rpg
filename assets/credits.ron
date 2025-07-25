@@ -8,6 +8,6 @@
     ("icons", "khusmeen, CC4" ),
     ],
     devs: [
-    ( "olekspickle", "compiled different bevy crates to have a consistent template covering stuff average third person RPG game need"),
+    ( "olekspickle", "compiled different bevy crates to have a consistent template covering stuff average 3D RPG game needs"),
     ]
 )

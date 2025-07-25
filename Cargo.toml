@@ -30,8 +30,8 @@ authors = ["Oleks Pickle <22867443+olekspickle@users.noreply.github.com>"]
 license = "MIT OR Apache-2.0 OR CC0"
 exclude = ["assets"]
 repository = "https://github.com/olekspickle/bevy_new_3d_rpg"
-description = "Simple third person view 3D RPG game template with gamepad support"
-keywords = ["bevy", "game", "template", "devkit", "third person", "gamedev"]
+description = "Simple but comprehensive 3D RPG game template with gamepad support"
+keywords = ["bevy", "game", "template", "devkit", "third person", "topdown", "gamedev"]
 
 [workspace]
 members = [ "crates/*" ]
@@ -111,6 +111,7 @@ avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"]
 
 bevy_seedling = "0.4"                   # audio engine
 bevy_third_person_camera = "0.3"        # 3rd person camera
+bevy_top_down_camera = "0.1"            # top down camera
 
 bevy-tnua = "0.24"                      # floating character control
 bevy-tnua-avian3d = "0.5"
