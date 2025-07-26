@@ -27,16 +27,22 @@ pub fn plugin(app: &mut App) {
     app.add_plugins((
         TnuaControllerPlugin::new(FixedUpdate),
         TnuaAvian3dPlugin::new(FixedUpdate),
-        #[cfg(feature = "third_person")]
-        ThirdPersonCameraPlugin,
-        #[cfg(feature = "top_down")]
-        TopDownCameraPlugin,
         control::plugin,
         sound::plugin,
     ));
 
-    app.configure_sets(PostUpdate, CameraSyncSet.after(PhysicsSet::Sync))
-        .add_systems(OnEnter(Screen::Gameplay), spawn_player)
+    #[cfg(feature = "third_person")]
+    app.add_plugins(ThirdPersonCameraPlugin).configure_sets(
+        PostUpdate,
+        bevy_third_person_camera::CameraSyncSet.after(PhysicsSet::Sync),
+    );
+    #[cfg(feature = "top_down")]
+    app.add_plugins(TopDownCameraPlugin).configure_sets(
+        PostUpdate,
+        bevy_top_down_camera::CameraSyncSet.after(PhysicsSet::Sync),
+    );
+
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_player)
         .add_systems(
             Update,
             animating
@@ -76,7 +82,7 @@ pub fn spawn_player(
             StateScoped(Screen::Gameplay),
             pos,
             player,
-            // camera
+            // camera target component
             (
                 #[cfg(feature = "third_person")]
                 ThirdPersonCameraTarget,
