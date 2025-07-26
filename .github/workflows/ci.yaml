@@ -84,7 +84,7 @@ jobs:
       - name: Run Dependency Machete
         run: cargo machete
 
-  # # Run Bevy lints.
+  # bevy_cli has pretty outdated nightly version
   # bevy-lints:
   #   name: Bevy lints
   #   runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
   #     - name: Run Bevy lints
   #       run: bevy_lint --locked --workspace --all-targets --profile ci --all-features
 
-  # Run tests.
+  # Run tests
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -168,4 +168,5 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Check web
-        run: cargo check --config 'profile.web.inherits="dev"' --profile ci --no-default-features --features dev --target wasm32-unknown-unknown
+        run: cargo check --config 'profile.web.inherits="dev"' --profile ci --no-default-features --features web --target wasm32-unknown-unknown
+

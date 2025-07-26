@@ -134,7 +134,7 @@ tracing = { version = "0.1", features = ["max_level_debug", "release_max_level_w
 winit = { version = "0.30", default-features = false }
 
 
-
+# LINT
 
 [workspace.lints.clippy]
 # Bevy supplies arguments to systems via dependency injection, so it's natural for systems to
@@ -149,6 +149,8 @@ default-features = false
 default-features = false
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]
+
+# BUILD
 
 [profile.ci]                        # Optimize for build time in CI.
 inherits = "dev"

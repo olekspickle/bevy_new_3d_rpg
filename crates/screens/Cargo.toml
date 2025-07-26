@@ -10,7 +10,7 @@ audio = { path = "../audio" }
 asset_loading = { path = "../asset_loading" }
 game = { path = "../game" }
 models = { path = "../models" }
-scene = { path = "../scene" }
+# scene = { path = "../scene" }
 ui = { path = "../ui" }
 
 bevy.workspace = true

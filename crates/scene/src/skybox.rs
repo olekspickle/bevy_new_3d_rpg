@@ -1,6 +1,9 @@
 use super::*;
 use bevy::{
-    core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
+    core_pipeline::{
+        bloom::Bloom,
+        tonemapping::{DebandDither, Tonemapping},
+    },
     pbr::{Atmosphere, AtmosphereSettings, CascadeShadowConfigBuilder, light_consts::lux},
     render::camera::Exposure,
 };
@@ -25,31 +28,29 @@ pub fn add_skybox_to_camera(
     }
     .build();
 
-    // Sun
     commands.spawn((
         StateScoped(Screen::Gameplay),
+        Sun,
         DirectionalLight {
             color: SUN,
             shadows_enabled: true,
             illuminance: lux::FULL_DAYLIGHT,
             ..Default::default()
         },
-        Sun,
         Transform::from_translation(Vec3::new(0.0, 0.0, 200.0)),
         cascade_shadow_config.clone(),
     ));
 
-    // Moon
     commands.spawn((
         StateScoped(Screen::Gameplay),
+        Moon,
         DirectionalLight {
             color: MOON,
             shadows_enabled: true,
             illuminance: lux::FULL_MOON_NIGHT,
             ..Default::default()
         },
-        Moon,
-        Transform::from_translation(Vec3::new(0.0, 0.0, -200.0)),
+        Transform::from_translation(Vec3::new(0.0, 10.0, -200.0)),
         cascade_shadow_config,
     ));
 
@@ -81,6 +82,7 @@ pub fn add_skybox_to_camera(
         Tonemapping::BlenderFilmic,
         Exposure::OVERCAST,
         Bloom::NATURAL,
+        DebandDither::Enabled, // Bloom causes gradients which cause banding
     ));
 
     if cfg.physics.distance_fog {

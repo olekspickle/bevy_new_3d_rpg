@@ -41,7 +41,7 @@
         distance_fog: true,
         fog_directional_light_exponent: 10,
         fog_visibility: 500,
-        shadow_distance: 300,
+        shadow_distance: 500,
     ),
     settings: (
         min_volume: 0.0,
@@ -50,18 +50,5 @@
         max_fov: 160.0,
         step: 0.1,
 
-    ),
-    credits: (
-        assets: [
-        ("Bevy Logo", "All rights reserved by the Bevy Foundation, permission granted for splash screen use when unmodified" ),
-        ("Background Music", "smnbl-time-for-fun\ngifted to rust community, CC0" ),
-        ("Button hover/press sounds, step sounds", "smnbl records\ngifted to rust community, CC0" ),
-        ("Scene assets", "olekspickle\ngifted to rust community, CC0" ),
-        ("Textures", "https://www.texturecan.com/details/290, https://www.texturecan.com/details/283, CC0" ),
-        ("icons", "khusmeen, CC4" ),
-        ],
-        devs: [
-        ( "olekspickle", "compiled different bevy crates to have a consistent template covering stuff average third person RPG game need"),
-        ]
     )
 )

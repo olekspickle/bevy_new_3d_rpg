@@ -3,10 +3,13 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
 use bevy_enhanced_input::prelude::*;
+#[cfg(feature = "third_person")]
 use bevy_third_person_camera::*;
 use bevy_tnua::prelude::*;
 use bevy_tnua::{TnuaAnimatingState, control_helpers::TnuaSimpleAirActionsCounter};
 use bevy_tnua_avian3d::*;
+#[cfg(feature = "top_down")]
+use bevy_top_down_camera::*;
 use models::*;
 use std::{f32::consts::PI, time::Duration};
 
@@ -22,9 +25,12 @@ pub const IDLE_TO_RUN_TRESHOLD: f32 = 0.01;
 /// Player logic is only active during the State `Screen::Playing`
 pub fn plugin(app: &mut App) {
     app.add_plugins((
-        ThirdPersonCameraPlugin,
         TnuaControllerPlugin::new(FixedUpdate),
         TnuaAvian3dPlugin::new(FixedUpdate),
+        #[cfg(feature = "third_person")]
+        ThirdPersonCameraPlugin,
+        #[cfg(feature = "top_down")]
+        TopDownCameraPlugin,
         control::plugin,
         sound::plugin,
     ));
@@ -70,7 +76,13 @@ pub fn spawn_player(
             StateScoped(Screen::Gameplay),
             pos,
             player,
-            ThirdPersonCameraTarget,
+            // camera
+            (
+                #[cfg(feature = "third_person")]
+                ThirdPersonCameraTarget,
+                #[cfg(feature = "top_down")]
+                TopDownCameraTarget,
+            ),
             // input context
             (
                 GameplayCtx,
@@ -120,8 +132,7 @@ pub fn spawn_player(
             //     Transform::from_xyz(0.0, -0.1, 0.0),
             // ));
             // DEBUG
-        })
-        .observe(player_post_spawn);
+        });
 
     Ok(())
 }
