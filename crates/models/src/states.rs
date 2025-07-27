@@ -14,10 +14,6 @@ pub struct GameState {
     pub last_screen: Screen,
     pub current_mood: MoodType,
 
-    /// Only relevant in top_down camera mode
-    /// Track if we should move or rotate camera on mouse move
-    pub camera_mode: CameraMode,
-
     pub diagnostics: bool,
     pub debug_ui: bool,
     pub paused: bool,
@@ -29,7 +25,6 @@ impl Default for GameState {
         Self {
             modals: vec![],
             last_screen: Screen::Title,
-            camera_mode: CameraMode::Move,
             current_mood: MoodType::Exploration,
             diagnostics: true,
             debug_ui: false,
@@ -77,12 +72,4 @@ pub enum MoodType {
     #[default]
     Exploration,
     Combat,
-}
-
-// #[cfg(feature = "top_down")]
-#[derive(Default, Clone, Eq, PartialEq, Debug, Hash, Reflect)]
-pub enum CameraMode {
-    #[default]
-    Move,
-    Rotate,
 }

@@ -54,6 +54,7 @@ fn change_mood(
     on: Trigger<ChangeMood>,
     settings: Res<Settings>,
     sources: Res<AudioSources>,
+    mut state: ResMut<GameState>,
     music: Query<Entity, (With<SamplerPool<Music>>, Without<SamplerPool<Sfx>>)>,
     mut commands: Commands,
 ) {
@@ -89,6 +90,7 @@ fn change_mood(
             ));
         }
     }
+    state.current_mood = mood.clone();
 }
 
 // Fades in the audio of entities that has the FadeIn component. Removes the FadeIn component once

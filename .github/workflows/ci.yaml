@@ -168,5 +168,5 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Check web
-        run: cargo check --config 'profile.web.inherits="dev"' --profile ci --no-default-features --features web --target wasm32-unknown-unknown
+        run: cargo check --profile ci --no-default-features --features web --target wasm32-unknown-unknown
 

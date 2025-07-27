@@ -6,7 +6,7 @@ use models::*;
 use scene::*;
 
 mod camera;
-#[cfg(feature = "dev_native")]
+#[cfg(debug_assertions)]
 mod dev_tools;
 mod mood;
 
@@ -20,7 +20,7 @@ pub fn plugin(app: &mut App) {
         scene::plugin,
         player::plugin,
         mood::plugin,
-        #[cfg(feature = "dev_native")]
+        #[cfg(debug_assertions)]
         dev_tools::plugin,
     ));
 }

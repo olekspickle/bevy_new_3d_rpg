@@ -39,13 +39,15 @@ resolver = "3"
 
 [features]
 default = [ "dev_native" ]
-dev = [
+debug = [
     "bevy/bevy_dev_tools",
     "bevy/bevy_ui_debug",
+]
+dev = [
+    "debug",
     "bevy/dynamic_linking",         # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/track_location",          # Improve error messages coming from Bevy
 ]
-web = []
 dev_native = [
     "dev",
     "enhanced",
@@ -58,6 +60,8 @@ enhanced = [
     "bevy/bevy_pbr",                # PBR
     "bevy/pbr_specular_textures",   # PBR specular maps
 ]
+# TODO: find a proper config to not have these in release
+web = ["debug"]
 
 [workspace.dependencies.bevy]
 # version = "0.17.0-dev"
@@ -152,6 +156,13 @@ features = ["dev"]
 
 # BUILD
 
+[profile.dev]                       # Less optimization in the dev profile.
+opt-level = 1
+[profile.dev.package."*"]           # More optimization in the dev profile for dependencies.
+opt-level = 3
+[profile.dev.package.wgpu-types]    # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
+debug-assertions = false
+
 [profile.ci]                        # Optimize for build time in CI.
 inherits = "dev"
 opt-level = 0
@@ -160,14 +171,6 @@ codegen-units = 4
 [profile.ci.package."*"]
 opt-level = 0
 
-[profile.dev]                       # Less optimization in the dev profile.
-opt-level = 1
-[profile.dev.package."*"]           # More optimization in the dev profile for dependencies.
-opt-level = 3
-
-[profile.dev.package.wgpu-types]    # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
-debug-assertions = false
-
 [profile.release]
 # Do a second optimization pass over the entire program, including dependencies.
 # Slows compile times, marginal improvements.
@@ -175,7 +178,9 @@ lto = "thin"
 # Optimize with size in mind (also try "z", sometimes it is better).
 # Slightly slows compile times, great improvements to file size and runtime performance.
 opt-level = "s"
-codegen-units = 1                   # Compile the entire crate as one unit. Slows compile times, marginal improvements.
+# Compile the entire crate as one unit. Slows compile times to less size.
+# Default is 16 or 256(incremental builds). This template f.e. 18Mb -> 24Mb
+codegen-units = 1
 strip = true
 
 

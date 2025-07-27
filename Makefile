@@ -1,4 +1,4 @@
-.PHONY: clean-build docs lint build build-web hot run run-web
+.PHONY: clean-build docs lint build check-web build-web run run-web
 
 .ONESHELL: # Use one shell per target
 	SHELL := /bin/bash
@@ -6,7 +6,7 @@
 	.SHELLFLAGS = -ec
 
 clean-build:
-	cargo clean && make build && make lint
+	cargo clean && make build && make lint && make check-web
 
 docs:
 	cargo doc --open --no-deps --workspace
@@ -18,6 +18,9 @@ lint:
 
 build:
 	bevy build --locked --release
+
+check-web:
+	cargo check --profile ci --no-default-features --features web --target wasm32-unknown-unknown
 
 build-web:
 	cargo binstall --locked -y --force wasm-bindgen-cli
