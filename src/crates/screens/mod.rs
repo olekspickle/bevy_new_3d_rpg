@@ -1,11 +1,8 @@
 //! The game's main screen states and transitions between them.
 
-use asset_loading::*;
-use audio::*;
+use super::*;
 use bevy::{prelude::*, ui::Val::*};
 use bevy_seedling::prelude::*;
-use models::*;
-use ui::*;
 
 mod credits;
 mod gameplay;

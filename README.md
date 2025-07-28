@@ -11,7 +11,7 @@ This template is based on the awesome [BevyFlock 2D template][BevyFlock] featuri
 - macOS
 - Web (Wasm)
 This template is a great way to get started if you aim to build new 3D RPG [Bevy] game!
-It is not as simple as bevy_new_2d which is aimed to an easy start. It focuses to have a rather solid structure to be able to carry the weight of big projects and uses cargo workspaces for that. It adds a bit of complexity, but for big projects it's unavoidable, and this is an example of a [flat architercture](#project-structure).
+It is not as simple as bevy_new_2d which is aimed to an easy start. It focuses to have a rather solid structure to be able to carry the weight of big projects and tries to follow the [flat architercture](#project-structure) principle.
 Start with a [basic project](#write-your-game) and [CI / CD](#release-your-game) that can deploy to [itch.io](https://itch.io).
 You can [try this template in your browser!](https://olekspickle.itch.io/bevy-3d-rpg)
 
@@ -23,12 +23,11 @@ cargo generate olekspickle/bevy_new_3d_rpg -n my-rpg
 bevy new -t=olekspickle/bevy_new_3d_rpg my-rpg
 ```
 
-<!-- ### Hotpatching -->
-<!-- If you want to use serving with hotpatching, you can use dioxus-cli: -->
-<!---->
-<!-- Linux: `bash BEVY_ASSET_ROOT="." dx serve --hot-patch` -->
-<!---->
-<!-- Windows PS:`$env:BEVY_ASSET_ROOT="." ; dx serve --hot-patch` -->
+### Hotpatching
+If you want to use serving with hotpatching, you can use dioxus-cli:
+
+- Linux: `make hot` or `bash BEVY_ASSET_ROOT="." dx serve --hot-patch`
+- Windows PS:`$env:BEVY_ASSET_ROOT="." ; dx serve --hot-patch`
 
 ## Features:
 - [x] flat cargo workspace based project structure for game logic crates that can grow and be maintainable
@@ -46,7 +45,7 @@ bevy new -t=olekspickle/bevy_new_3d_rpg my-rpg
 - [x] audio, video and keys rebind tabs in settings (currently not really working)
 - [x] easy drop in scene integration using awesome [skein] with a simple scene
 
-### TODOs (prioritized)
+### TODOs
 - [ ] add basic mood change per zone
 - [ ] implement different music states(exploration, combat)
 - [ ] custom font replace example using pre-loaded font
@@ -70,21 +69,20 @@ The best way to get started is to play around with the code you find in [`src/ga
 This template comes with a basic project structure that you may find useful:
 
 ### Project structure
-| Path                                              | Description                                                           |
-| ------------------------------------------------- | --------------------------------------------------------------------- |
-| [`src/main.rs`](./src/main.rs)                    | App entrypoint where system plugins and window set up                 |
-| [`assets`](./assets)                              | Asset directory                                                       |
-| [`crates`](./crates)                              | A contained ordered way to improve compile times                      |
-| [`crates/asset_loading`](./crates/asset_loading)  | A high-level way to load collections of asset handles as resources    |
-| [`crates/models`](./crates/models)                | Data source for the game: inputs, markers, timers                     |
-| [`crates/audio`](./crates/audio)                  | Marker components for sound effects and music, bus setup              |
-| [`crates/screens`](./crates/screens)              | Splash/title/gameplay and other screen related systems and ui         |
-| [`crates/scene`](./crates/scene)                  | Scene setup, skybox                                                   |
-| [`crates/game`](./crates/game)                    | Game mechanics & content                                              |
-| [`crates/player`](./crates/player)                | Player control & animation                                            |
-| [`crates/ui`](./crates/ui)                        | Reusable UI widgets & game color pallet control                       |
+| Path                                                  | Description                                                           |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| [`src/main.rs`](./src/main.rs)                        | App entrypoint where system plugins and window set up                 |
+| [`assets`](./assets)                                  | Asset directory                                                       |
+| [`crates/asset_loading`](./src/crates/asset_loading)  | A high-level way to load collections of asset handles as resources    |
+| [`crates/models`](./src/crates/models)                | Data source for the game: inputs, markers, timers                     |
+| [`crates/audio`](./src/crates/audio)                  | Marker components for sound effects and music, bus setup              |
+| [`crates/screens`](./src/crates/screens)              | Splash/title/gameplay and other screen related systems and ui         |
+| [`crates/scene`](./src/crates/scene)                  | Scene setup, skybox                                                   |
+| [`crates/game`](./src/crates/game)                    | Game mechanics & content                                              |
+| [`crates/player`](./src/crates/player)                | Player control & animation                                            |
+| [`crates/ui`](./src/crates/ui)                        | Reusable UI widgets & game color pallet control                       |
 
-Feel free to move things around however you want, though.
+Feel free to move things around however you want, though
 
 ## Run your game
 
@@ -92,18 +90,22 @@ Feel free to move things around however you want, though.
 There are some helpful commands in [Makefile](./Makefile) to simplify build options
 But generally running your game locally is very simple:
 
-- `make run` if you have `cmake`
-- Use `bevy run` with [bevy_cli] or `cargo run` to run a native dev build.
-- Use this command to run a web dev build to run audio in separate thread to avoid audio stuttering:
-```bash
-bevy run web --headers="Cross-Origin-Opener-Policy:same-origin" --headers="Cross-Origin-Embedder-Policy:credentialless"
-```
+<details>
+    <summary><ins>Bevy CLI</ins></summary>
+
+- Dev: `bevy run` to run a native dev build
+- Release: `bevy run --release` to run a native release build
+- Use `bevy run --release web` to run a web release build
+To run a **web** dev build to run audio in separate thread to avoid audio stuttering:
+- :`bash bevy run web --headers="Cross-Origin-Opener-Policy:same-origin" --headers="Cross-Origin-Embedder-Policy:credentialless" `
+</details>
 
 <details>
-    <summary><ins>Running release builds</ins></summary>
+    <summary><ins>CMake</ins></summary>
 
-    - Use `bevy run --release` to run a native release build.
-- Use `bevy run --release web` to run a web release build.
+- Dev: `make run` to run a **native** dev build
+- Release: `make build` to build a **native** release build
+- Web: `make run-web` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
 </details>
 
 <details>

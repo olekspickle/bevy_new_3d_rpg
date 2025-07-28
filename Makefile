@@ -1,4 +1,4 @@
-.PHONY: clean-build docs lint build check-web build-web run run-web
+.PHONY: clean-build docs lint build check-web build-web hot run run-web
 
 .ONESHELL: # Use one shell per target
 	SHELL := /bin/bash
@@ -6,7 +6,7 @@
 	.SHELLFLAGS = -ec
 
 clean-build:
-	cargo clean && make build && make lint && make check-web
+	cargo clean && make build-dev && make lint && make check-web
 
 docs:
 	cargo doc --open --no-deps --workspace
@@ -16,8 +16,11 @@ lint:
 	cargo fmt --all -- --check
 	cargo machete
 
+build-dev:
+	cargo build
+
 build:
-	bevy build --locked --release
+	cargo build --release
 
 check-web:
 	cargo check --profile ci --no-default-features --features web --target wasm32-unknown-unknown

@@ -1,16 +1,11 @@
-use asset_loading::*;
-use audio::*;
+use super::*;
 use bevy::prelude::*;
 use bevy_seedling::prelude::*;
-use models::*;
-use scene::*;
 
 mod camera;
-#[cfg(debug_assertions)]
+#[cfg(any(debug_assertions, not(feature = "web")))]
 mod dev_tools;
 mod mood;
-
-pub use camera::*;
 
 pub fn plugin(app: &mut App) {
     app.insert_resource(Score(0));

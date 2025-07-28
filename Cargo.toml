@@ -1,29 +1,5 @@
-# GAME BINARY
 [package]
 name = "bevy_new_3d_rpg"
-edition.workspace = true
-version.workspace = true
-authors.workspace = true
-license.workspace = true
-exclude.workspace = true
-repository.workspace = true
-description.workspace = true
-keywords.workspace = true
-
-[dependencies]
-audio = { path = "crates/audio" }
-asset_loading = { path = "crates/asset_loading" }
-models = { path = "crates/models" }
-screens = { path = "crates/screens" }
-ui = { path = "crates/ui" }
-bevy.workspace = true
-image.workspace = true
-winit.workspace = true
-
-
-
-# WORKSPACE CONFIGURATION
-[workspace.package]
 edition = "2024"
 version = "0.1.4"
 authors = ["Oleks Pickle <22867443+olekspickle@users.noreply.github.com>"]
@@ -33,37 +9,31 @@ repository = "https://github.com/olekspickle/bevy_new_3d_rpg"
 description = "Simple but comprehensive 3D RPG game template with gamepad support"
 keywords = ["bevy", "game", "template", "devkit", "third person", "topdown", "gamedev"]
 
-[workspace]
-members = [ "crates/*" ]
-resolver = "3"
-
 [features]
-default = [ "dev_native" ]
-debug = [
+default = [ "dev_native", "third_person" ]
+top_down = ["bevy_top_down_camera"]
+third_person = ["bevy_third_person_camera"]
+dev = [
     "bevy/bevy_dev_tools",
     "bevy/bevy_ui_debug",
-]
-dev = [
-    "debug",
     "bevy/dynamic_linking",         # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/track_location",          # Improve error messages coming from Bevy
 ]
 dev_native = [
     "dev",
     "enhanced",
+    "bevy-inspector-egui",
     "bevy/embedded_watcher",        # Enable embedded asset hot reloading for native dev builds.
     "bevy/file_watcher",            # Enable asset hot reloading for native dev builds.
-    "asset_loading/dev_native",     # hot reload asset if they change
 ]
 enhanced = [
     "bevy/meshlet",                 # new nanite-like rendering system
     "bevy/bevy_pbr",                # PBR
     "bevy/pbr_specular_textures",   # PBR specular maps
 ]
-# TODO: find a proper config to not have these in release
-web = ["debug"]
+web = []
 
-[workspace.dependencies.bevy]
+[dependencies.bevy]
 # version = "0.17.0-dev"
 # branch = "main"
 # git = "https://github.com/bevyengine/bevy"
@@ -105,23 +75,22 @@ features = [
     "wayland"
 ]
 
-[workspace.dependencies]
-# stupid gltf 180 rotation fix
+[dependencies]
+# plugins
+# stupid gltf 180 rotation fix that will be upstreamed in 0.17
 bevy_fix_gltf_coordinate_system = "0.1"
 bevy_fix_cursor_unlock_web = "0.1"
-
-# plugins
-avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"] } # physics
-
-bevy_seedling = "0.4"                   # audio engine
-bevy_third_person_camera = "0.3"        # 3rd person camera
-bevy_top_down_camera = "0.1"            # top down camera
-
-bevy-tnua = "0.24"                      # floating character control
-bevy-tnua-avian3d = "0.5"
-bevy_enhanced_input = "0.12"            # keyboard/gamepad bindings
-
+bevy-inspector-egui = { version = "0.31.0", optional = true }
+bevy_skein = "0.2.1"                    # blender integration
 iyes_perf_ui = "0.5"                    # diagnostics overlay
+
+avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"] } # physics
+bevy_seedling = "0.4"                   # audio engine
+bevy_third_person_camera = { version = "0.3", optional = true }     # 3rd person camera
+bevy_top_down_camera = { version = "0.1", optional = true }         # top down camera
+bevy-tnua = "0.24"                      # floating character control
+bevy-tnua-avian3d = "0.5"               # tnua-avian interaction
+bevy_enhanced_input = "0.12"            # keyboard/gamepad input
 
 # misc
 # itertools = "0.14.0"
@@ -137,6 +106,8 @@ tracing = { version = "0.1", features = ["max_level_debug", "release_max_level_w
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.30", default-features = false }
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+firewheel-web-audio = { git = "https://github.com/CorvusPrudens/firewheel-web-audio" }
 
 # LINT
 
@@ -182,7 +153,6 @@ opt-level = "s"
 # Default is 16 or 256(incremental builds). This template f.e. 18Mb -> 24Mb
 codegen-units = 1
 strip = true
-
 
 [profile.wasm-release]              # Optimize for size in the wasm-release profile to reduce load times and bandwidth usage on web.
 inherits = "release"

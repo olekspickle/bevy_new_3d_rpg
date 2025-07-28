@@ -294,18 +294,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "asset_loading"
-version = "0.1.4"
-dependencies = [
- "bevy",
- "bevy_seedling",
- "models",
- "ron 0.10.1",
- "serde",
- "thiserror 2.0.12",
-]
-
-[[package]]
 name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -409,15 +397,6 @@ checksum = "f52e8890bb9844440d0c412fa74b67fd2f14e85248b6e00708059b6da9e5f8bf"
 dependencies = [
  "portable-atomic",
  "portable-atomic-util",
-]
-
-[[package]]
-name = "audio"
-version = "0.1.4"
-dependencies = [
- "bevy",
- "bevy_seedling",
- "firewheel-web-audio",
 ]
 
 [[package]]
@@ -938,6 +917,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_fix_cursor_unlock_web"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04da367e72200deb11be72eeea6582b6daea3bfe76d1e42216f272cc8531ef90"
+dependencies = [
+ "bevy",
+ "web-sys",
+]
+
+[[package]]
 name = "bevy_fix_gltf_coordinate_system"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1239,13 +1228,27 @@ dependencies = [
 name = "bevy_new_3d_rpg"
 version = "0.1.4"
 dependencies = [
- "asset_loading",
- "audio",
+ "avian3d",
  "bevy",
+ "bevy-inspector-egui",
+ "bevy-tnua",
+ "bevy-tnua-avian3d",
+ "bevy_enhanced_input",
+ "bevy_fix_cursor_unlock_web",
+ "bevy_fix_gltf_coordinate_system",
+ "bevy_seedling",
+ "bevy_skein",
+ "bevy_third_person_camera",
+ "bevy_top_down_camera",
+ "firewheel-web-audio",
  "image",
- "models",
- "screens",
- "ui",
+ "iyes_perf_ui",
+ "log",
+ "rand",
+ "ron 0.10.1",
+ "serde",
+ "thiserror 2.0.12",
+ "tracing",
  "winit",
 ]
 
@@ -3005,25 +3008,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "game"
-version = "0.1.4"
-dependencies = [
- "asset_loading",
- "audio",
- "avian3d",
- "bevy",
- "bevy-inspector-egui",
- "bevy_seedling",
- "bevy_third_person_camera",
- "bevy_top_down_camera",
- "models",
- "player",
- "rand",
- "scene",
- "ui",
-]
-
-[[package]]
 name = "gethostname"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3906,18 +3890,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "models"
-version = "0.1.4"
-dependencies = [
- "avian3d",
- "bevy",
- "bevy_enhanced_input",
- "bevy_seedling",
- "ron 0.10.1",
- "serde",
-]
-
-[[package]]
 name = "naga"
 version = "24.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4754,24 +4726,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
-name = "player"
-version = "0.1.4"
-dependencies = [
- "asset_loading",
- "audio",
- "avian3d",
- "bevy",
- "bevy-tnua",
- "bevy-tnua-avian3d",
- "bevy_enhanced_input",
- "bevy_seedling",
- "bevy_third_person_camera",
- "bevy_top_down_camera",
- "models",
- "rand",
-]
-
-[[package]]
 name = "png"
 version = "0.17.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5379,18 +5333,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "scene"
-version = "0.1.4"
-dependencies = [
- "asset_loading",
- "avian3d",
- "bevy",
- "bevy_fix_gltf_coordinate_system",
- "bevy_skein",
- "models",
-]
-
-[[package]]
 name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5401,19 +5343,6 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
-
-[[package]]
-name = "screens"
-version = "0.1.4"
-dependencies = [
- "asset_loading",
- "audio",
- "bevy",
- "bevy_seedling",
- "game",
- "models",
- "ui",
-]
 
 [[package]]
 name = "sctk-adwaita"
@@ -6214,19 +6143,6 @@ name = "typenum"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
-
-[[package]]
-name = "ui"
-version = "0.1.4"
-dependencies = [
- "asset_loading",
- "audio",
- "bevy",
- "bevy_enhanced_input",
- "bevy_seedling",
- "iyes_perf_ui",
- "models",
-]
 
 [[package]]
 name = "unicode-bidi"

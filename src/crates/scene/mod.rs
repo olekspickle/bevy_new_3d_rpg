@@ -1,8 +1,7 @@
-use asset_loading::*;
+use super::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_skein::SkeinPlugin;
-use models::*;
 
 mod skybox;
 

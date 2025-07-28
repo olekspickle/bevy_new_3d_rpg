@@ -1,4 +1,4 @@
-use asset_loading::*;
+use super::*;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
@@ -10,7 +10,6 @@ use bevy_tnua::{TnuaAnimatingState, control_helpers::TnuaSimpleAirActionsCounter
 use bevy_tnua_avian3d::*;
 #[cfg(feature = "top_down")]
 use bevy_top_down_camera::*;
-use models::*;
 use std::{f32::consts::PI, time::Duration};
 
 mod animation;

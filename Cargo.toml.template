@@ -1,60 +1,47 @@
 [package]
 name = "{{project-name}}"
 edition = "2024"
-
-[workspace.package]
 version = "0.1.0"
 authors = ["{{authors}}"]
-edition = "2024"
 license = "MIT OR Apache-2.0"
+exclude = ["assets"]
 repository = "https://github.com/{{authors}}/{{project-name}}"
-keywords = ["bevy", "game", "third person"]
-
-[workspace]
-members = [ "crates/*" ]
-resolver = "3"
+keywords = ["bevy", "game", "third person", "topdown", "gamedev"]
 
 [features]
-default = [ "dev_native" ]
+default = [ "dev_native", "third_person" ]
+top_down = ["bevy_top_down_camera"]
+third_person = ["bevy_third_person_camera"]
 dev = [
     "bevy/bevy_dev_tools",
     "bevy/bevy_ui_debug",
     "bevy/dynamic_linking",         # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/track_location",          # Improve error messages coming from Bevy
 ]
-web = []
 dev_native = [
     "dev",
     "enhanced",
+    "bevy-inspector-egui",
     "bevy/embedded_watcher",        # Enable embedded asset hot reloading for native dev builds.
     "bevy/file_watcher",            # Enable asset hot reloading for native dev builds.
-    "asset_loading/dev_native", "game/dev_native", "scene/dev_native"
 ]
 enhanced = [
+    "bevy/meshlet",                 # new nanite-like rendering system
     "bevy/bevy_pbr",                # PBR
     "bevy/pbr_specular_textures",   # PBR specular maps
-    "bevy/meshlet",                 # new nanite-like rendering system
 ]
+web = []
 
-[dependencies]
-audio = { path = "crates/audio" }
-asset_loading = { path = "crates/asset_loading" }
-game = { path = "crates/game" }
-models = { path = "crates/models" }
-scene = { path = "crates/scene" }
-screens = { path = "crates/screens" }
-ui = { path = "crates/ui" }
-
-bevy = { workspace = true }
-bevy_seedling = { workspace = true }
-itertools.workspace = true
-image = { workspace = true }
-winit = { workspace = true }
-
-[workspace.dependencies]
-# everything except bevy_audio
-bevy = { version = "^0.16", default-features = false, features = [
+[dependencies.bevy]
+# version = "0.17.0-dev"
+# branch = "main"
+# git = "https://github.com/bevyengine/bevy"
+version = "^0.16"
+default-features = false
+# opinionated list without bevy_audio
+features = [
     "std",
+    # "zstd_rust",
     "sysinfo_plugin",
     "multi_threaded",
     "hdr",
@@ -85,30 +72,27 @@ bevy = { version = "^0.16", default-features = false, features = [
     "webgl2",
     "x11",
     "wayland"
-] }
-# stupid gltf 180 rotation fix
+]
+
+[dependencies]
+# plugins
+# stupid gltf 180 rotation fix that will be upstreamed in 0.17
 bevy_fix_gltf_coordinate_system = "0.1"
 bevy_fix_cursor_unlock_web = "0.1"
-
-# plugins
-# wireframes
-# TODO: add when 0.16
-# aalo = { version = "0.0.5", optional = true }
-
-# physics
-avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"] }
-
-bevy_seedling = "0.4"                   # audio engine
-bevy_third_person_camera = "0.2"        # 3rd person camera
-
-bevy-tnua = "0.24"                      # floating character control
-bevy-tnua-avian3d = "0.5"
-bevy_enhanced_input = "0.12"            # keyboard/gamepad bindings
-
+bevy-inspector-egui = { version = "0.31.0", optional = true }
+bevy_skein = "0.2.1"                    # blender integration
 iyes_perf_ui = "0.5"                    # diagnostics overlay
 
+avian3d = { version = "0.3", features = ["3d", "parallel", "collider-from-mesh"] } # physics
+bevy_seedling = "0.4"                   # audio engine
+bevy_third_person_camera = { version = "0.3", optional = true }     # 3rd person camera
+bevy_top_down_camera = { version = "0.1", optional = true }         # top down camera
+bevy-tnua = "0.24"                      # floating character control
+bevy-tnua-avian3d = "0.5"               # tnua-avian interaction
+bevy_enhanced_input = "0.12"            # keyboard/gamepad input
+
 # misc
-itertools = "0.14.0"
+# itertools = "0.14.0"
 image = "0.25.6"
 ron = "0.10"
 rand = { version = "0.8" }
@@ -121,8 +105,10 @@ tracing = { version = "0.1", features = ["max_level_debug", "release_max_level_w
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.30", default-features = false }
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+firewheel-web-audio = { git = "https://github.com/CorvusPrudens/firewheel-web-audio" }
 
-
+# LINT
 
 [workspace.lints.clippy]
 # Bevy supplies arguments to systems via dependency injection, so it's natural for systems to
@@ -138,6 +124,15 @@ default-features = false
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]
 
+# BUILD
+
+[profile.dev]                       # Less optimization in the dev profile.
+opt-level = 1
+[profile.dev.package."*"]           # More optimization in the dev profile for dependencies.
+opt-level = 3
+[profile.dev.package.wgpu-types]    # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
+debug-assertions = false
+
 [profile.ci]                        # Optimize for build time in CI.
 inherits = "dev"
 opt-level = 0
@@ -146,14 +141,6 @@ codegen-units = 4
 [profile.ci.package."*"]
 opt-level = 0
 
-[profile.dev]                       # Less optimization in the dev profile.
-opt-level = 1
-[profile.dev.package."*"]           # More optimization in the dev profile for dependencies.
-opt-level = 3
-
-[profile.dev.package.wgpu-types]    # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
-debug-assertions = false
-
 [profile.release]
 # Do a second optimization pass over the entire program, including dependencies.
 # Slows compile times, marginal improvements.
@@ -161,13 +148,11 @@ lto = "thin"
 # Optimize with size in mind (also try "z", sometimes it is better).
 # Slightly slows compile times, great improvements to file size and runtime performance.
 opt-level = "s"
-codegen-units = 1                   # Compile the entire crate as one unit. Slows compile times, marginal improvements.
+# Compile the entire crate as one unit. Slows compile times to less size.
+# Default is 16 or 256(incremental builds). This template f.e. 18Mb -> 24Mb
+codegen-units = 1
 strip = true
-
 
 [profile.wasm-release]              # Optimize for size in the wasm-release profile to reduce load times and bandwidth usage on web.
 inherits = "release"
 strip = "debuginfo"                 # Strip all debugging information from the binary to slightly reduce file size.
-
-[build-dependencies]
-embed-resource = "1"

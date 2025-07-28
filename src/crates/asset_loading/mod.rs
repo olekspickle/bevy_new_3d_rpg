@@ -1,6 +1,6 @@
+use super::*;
 use bevy::{asset::Asset, prelude::*};
 use bevy_seedling::sample::Sample;
-use models::{Config, Credits};
 
 mod ron;
 mod tracking;

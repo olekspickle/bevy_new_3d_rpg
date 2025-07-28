@@ -4,9 +4,12 @@
 use bevy::{
     app::App, asset::AssetMetaCheck, log, prelude::*, window::PrimaryWindow, winit::WinitWindows,
 };
-use models::*;
 use std::io::Cursor;
 use winit::window::Icon;
+
+mod crates;
+
+use crates::*;
 
 fn main() {
     let mut app = App::new();
