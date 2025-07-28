@@ -1,9 +1,23 @@
 
 # 3D RPG Bevy game template (WIP)
-<video width="320" height="240" src="https://github.com/user-attachments/assets/95595cf1-10e0-451f-a390-26e614db183b" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/45388412-9b6e-4503-bf70-ff75618cea0d" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/cf22aa05-1332-40ea-b057-5c596e62f8e7" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/d26afc33-8cea-4265-884c-9bb33b569566" controls="controls"> </video>
+<table border="0">
+    <tr>
+        <td>
+            <video src="https://github.com/user-attachments/assets/6533b1d9-5971-41fd-acc4-5d2f567266be" controls="controls"> </video>
+        </td>
+        <td>
+            <video src="https://github.com/user-attachments/assets/3aadf8fc-7bb2-477d-82c6-44dc1d56ed08" controls="controls"> </video>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <video src="https://github.com/user-attachments/assets/7f470899-29b0-44c5-b418-6fdf240d130c" controls="controls"> </video>
+        </td>
+        <td>
+            <video src="https://github.com/user-attachments/assets/ea236931-6c59-456f-98de-447d3f6eb287" controls="controls"> </video>
+        </td>
+    </tr>
+</table>
 
 This template is based on the awesome [BevyFlock 2D template][BevyFlock] featuring out of the box builds for:
 - Windows
@@ -93,8 +107,8 @@ But generally running your game locally is very simple:
 <details>
     <summary><ins>Bevy CLI</ins></summary>
 
-- Dev: `bevy run` to run a native dev build
-- Release: `bevy run --release` to run a native release build
+    - Dev: `bevy run` to run a native dev build
+    - Release: `bevy run --release` to run a native release build
 - Use `bevy run --release web` to run a web release build
 To run a **web** dev build to run audio in separate thread to avoid audio stuttering:
 - :`bash bevy run web --headers="Cross-Origin-Opener-Policy:same-origin" --headers="Cross-Origin-Embedder-Policy:credentialless" `
@@ -103,13 +117,13 @@ To run a **web** dev build to run audio in separate thread to avoid audio stutte
 <details>
     <summary><ins>CMake</ins></summary>
 
-- Dev: `make run` to run a **native** dev build
+    - Dev: `make run` to run a **native** dev build
 - Release: `make build` to build a **native** release build
 - Web: `make run-web` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
 </details>
 
 <details>
-    <summary><ins>Installing Linux dependencies</ins></summary>
+<summary><ins>Installing Linux dependencies</ins></summary>
 
   If you're using Linux, make sure you've installed Bevy's [Linux dependencies].
   Note that this template enables Wayland support, which requires additional dependencies as detailed in the link above.
@@ -117,7 +131,7 @@ To run a **web** dev build to run audio in separate thread to avoid audio stutte
 </details>
 
 <details>
-    <summary><ins>(Optional) Improving compile times</ins></summary>
+<summary><ins>(Optional) Improving compile times</ins></summary>
 
 [`.cargo/config.toml`](./.cargo/config.toml) contains documentation on how to set up your environment to improve compile times.
 </details>
