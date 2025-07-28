@@ -55,7 +55,7 @@ fn change_mood(
     settings: Res<Settings>,
     sources: Res<AudioSources>,
     mut state: ResMut<GameState>,
-    music: Query<Entity, (With<SamplerPool<Music>>, Without<SamplerPool<Sfx>>)>,
+    music: Query<Entity, With<SamplerPool<Music>>>,
     mut commands: Commands,
 ) {
     let mood = &on.0;

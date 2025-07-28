@@ -101,13 +101,13 @@ serde = "1"
 thiserror = "2.0.12"
 # Leave only high-severity logs in native build
 log = { version = "0.4", features = ["max_level_debug", "release_max_level_warn"] }
-# Leave only high-severity logs in web build
-tracing = { version = "0.1", features = ["max_level_debug", "release_max_level_warn"] }
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.30", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 firewheel-web-audio = { git = "https://github.com/CorvusPrudens/firewheel-web-audio" }
+# Leave only high-severity logs in web build
+tracing = { version = "0.1", features = ["max_level_debug", "release_max_level_warn"] }
 
 # LINT
 

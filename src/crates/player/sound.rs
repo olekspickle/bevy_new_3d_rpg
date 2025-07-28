@@ -9,6 +9,7 @@ pub fn plugin(app: &mut App) {
         .add_observer(jump_sound);
 }
 
+#[allow(clippy::too_many_arguments)]
 fn movement_sound(
     on: Trigger<Fired<Navigate>>,
     time: Res<Time>,

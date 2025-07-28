@@ -4,6 +4,7 @@
 use bevy::{
     app::App, asset::AssetMetaCheck, log, prelude::*, window::PrimaryWindow, winit::WinitWindows,
 };
+use bevy_fix_cursor_unlock_web::prelude::*;
 use std::io::Cursor;
 use winit::window::Icon;
 
@@ -51,6 +52,7 @@ fn main() {
     // custom plugins. the order is important
     // be sure you use resources/types AFTER you add plugins that insert them
     app.add_plugins((
+        FixPointerUnlockPlugin,
         audio::plugin,
         asset_loading::plugin,
         ui::plugin,

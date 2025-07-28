@@ -1,9 +1,9 @@
 
 # 3D RPG Bevy game template (WIP)
-<video width="320" height="240" src="https://github.com/user-attachments/assets/778dd6c0-3722-42c3-ad4a-f3424ac588e2" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/0bbc555b-53ce-4e2a-bdab-d1219f857b6d" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/8692a08e-73c6-411a-b060-a971470e623a" controls="controls"> </video>
-<video width="320" height="240" src="https://github.com/user-attachments/assets/72a324f8-195c-4608-aaf2-b88a1ba03896" controls="controls"> </video>
+<video width="320" height="240" src="https://github.com/user-attachments/assets/95595cf1-10e0-451f-a390-26e614db183b" controls="controls"> </video>
+<video width="320" height="240" src="https://github.com/user-attachments/assets/45388412-9b6e-4503-bf70-ff75618cea0d" controls="controls"> </video>
+<video width="320" height="240" src="https://github.com/user-attachments/assets/cf22aa05-1332-40ea-b057-5c596e62f8e7" controls="controls"> </video>
+<video width="320" height="240" src="https://github.com/user-attachments/assets/d26afc33-8cea-4265-884c-9bb33b569566" controls="controls"> </video>
 
 This template is based on the awesome [BevyFlock 2D template][BevyFlock] featuring out of the box builds for:
 - Windows

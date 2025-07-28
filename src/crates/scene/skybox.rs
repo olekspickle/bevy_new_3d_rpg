@@ -92,23 +92,6 @@ pub fn add_skybox_to_camera(
     Ok(())
 }
 
-pub fn rm_skybox_from_camera(
-    mut commands: Commands,
-    mut camera: Query<Entity, With<SceneCamera>>,
-) -> Result {
-    let camera = camera.single_mut()?;
-    commands
-        .entity(camera)
-        .remove::<Atmosphere>()
-        .remove::<AtmosphereSettings>()
-        .remove::<Exposure>()
-        .remove::<Bloom>()
-        .remove::<DistanceFog>()
-        .remove::<Tonemapping>();
-
-    Ok(())
-}
-
 pub fn distance_fog(cfg: Res<Config>) -> impl Bundle {
     DistanceFog {
         color: Color::srgba(0.35, 0.48, 0.66, 1.0),
@@ -123,6 +106,7 @@ pub fn distance_fog(cfg: Res<Config>) -> impl Bundle {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn sun_cycle(
     settings: Res<Settings>,
     mut sky_lights: Query<&mut Transform, Or<(With<Moon>, With<Sun>)>>,

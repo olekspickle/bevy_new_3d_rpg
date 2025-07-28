@@ -61,6 +61,7 @@ fn toggle_pause(
     info!("paused: {}", state.paused);
 }
 
+#[allow(clippy::type_complexity)]
 fn toggle_mute(
     _: Trigger<ToggleMute>,
     settings: ResMut<Settings>,

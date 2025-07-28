@@ -1,8 +1,7 @@
 use super::*;
-use bevy::{
-    ui::Display as NodeDisplay,
-    window::{PresentMode, PrimaryWindow},
-};
+#[cfg(feature = "dev_native")]
+use bevy::ui::Display as NodeDisplay;
+use bevy::window::{PresentMode, PrimaryWindow};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -121,7 +120,7 @@ fn raise_fov(
 
 fn update_fov_label(settings: Res<Settings>, mut label: Single<&mut Text, With<FovLabel>>) {
     let fov = settings.fov.round();
-    let text = format!("{fov: <3}");
+    let text = format!("{fov: <3}"); // pad to 3 chars
     label.0 = text;
 }
 
@@ -162,7 +161,7 @@ fn lower_music(
     _: Trigger<Pointer<Click>>,
     cfg: ResMut<Config>,
     mut settings: ResMut<Settings>,
-    mut music: Single<&mut VolumeNode, (With<SamplerPool<Music>>, Without<SamplerPool<Sfx>>)>,
+    mut music: Single<&mut VolumeNode, With<SamplerPool<Music>>>,
 ) {
     let new_volume = (settings.sound.music - cfg.settings.step).max(cfg.settings.min_volume);
     settings.sound.music = new_volume;
@@ -173,7 +172,7 @@ fn raise_music(
     _: Trigger<Pointer<Click>>,
     cfg: ResMut<Config>,
     mut settings: ResMut<Settings>,
-    mut music: Single<&mut VolumeNode, (With<SamplerPool<Music>>, Without<SamplerPool<Sfx>>)>,
+    mut music: Single<&mut VolumeNode, With<SamplerPool<Music>>>,
 ) {
     let new_volume = (settings.sound.music + cfg.settings.step).min(cfg.settings.max_volume);
     settings.sound.music = new_volume;
@@ -186,7 +185,7 @@ fn update_music_volume_label(
 ) {
     info!("music volume: {}", settings.sound.music);
     let percent = (settings.sound.music * 100.0).round();
-    let text = format!("{percent: <3}%");
+    let text = format!("{percent: <3}%"); // pad the percent to 3 chars
     label.0 = text;
 }
 
@@ -195,7 +194,7 @@ fn lower_sfx(
     _: Trigger<Pointer<Click>>,
     cfg: ResMut<Config>,
     mut settings: ResMut<Settings>,
-    mut sfx: Single<&mut VolumeNode, (With<SamplerPool<Sfx>>, Without<SamplerPool<Music>>)>,
+    mut sfx: Single<&mut VolumeNode, With<SamplerPool<Sfx>>>,
 ) {
     let new_volume = (settings.sound.sfx - cfg.settings.step).max(cfg.settings.min_volume);
     settings.sound.sfx = new_volume;
@@ -206,7 +205,7 @@ fn raise_sfx(
     _: Trigger<Pointer<Click>>,
     cfg: ResMut<Config>,
     mut settings: ResMut<Settings>,
-    mut sfx: Single<&mut VolumeNode, (With<SamplerPool<Sfx>>, Without<SamplerPool<Music>>)>,
+    mut sfx: Single<&mut VolumeNode, With<SamplerPool<Sfx>>>,
 ) {
     let new_volume = (settings.sound.sfx + cfg.settings.step).min(cfg.settings.max_volume);
     settings.sound.sfx = new_volume;
@@ -218,7 +217,7 @@ fn update_sfx_volume_label(
     settings: Res<Settings>,
 ) {
     let percent = (settings.sound.sfx * 100.0).round();
-    let text = format!("{percent: <3}%");
+    let text = format!("{percent: <3}%"); // pad the percent to 3 chars
     label.0 = text;
 }
 
@@ -246,6 +245,7 @@ fn click_toggle_vsync(
     Ok(())
 }
 
+#[cfg(feature = "dev_native")]
 fn click_toggle_diagnostics(
     _: Trigger<Pointer<Click>>,
     mut commands: Commands,
@@ -432,17 +432,23 @@ fn video_grid(cycle: &SunCycle) -> impl Bundle {
             label("FOV"),
             fov(),
             // TODO: do checkboxes when feathers
-            label("diagnostics"),
-            (btn("on", click_toggle_diagnostics), DiagnosticsLabel),
             label("VSync"),
-            (btn("on", click_toggle_vsync), DiagnosticsLabel),
+            (btn("on", click_toggle_vsync), VsyncLabel),
             #[cfg(feature = "dev_native")]
-            label("debug ui"),
-            #[cfg(feature = "dev_native")]
-            (btn("off", clock_toggle_debug_ui), DebugUiLabel)
+            dev_native_knobs()
         ],
     )
 }
+
+fn dev_native_knobs() -> impl Bundle {
+    (
+        label("diagnostics"),
+        (btn("on", click_toggle_diagnostics), DiagnosticsLabel),
+        label("debug ui"),
+        (btn("off", clock_toggle_debug_ui), DebugUiLabel),
+    )
+}
+
 fn audio_grid() -> impl Bundle {
     (
         Name::new("Settings Grid"),
@@ -478,7 +484,7 @@ fn general_volume() -> impl Bundle {
     )
 }
 
-// TODO: fov slider
+// TODO: fov slider when feathers
 fn fov() -> impl Bundle {
     (
         knobs_container(),

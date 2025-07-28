@@ -40,7 +40,7 @@ impl LoadResource for App {
         path: impl AsRef<Path>,
     ) -> &mut Self {
         self.init_asset::<T>();
-        let handle = {
+        let _handle = {
             let world = self.world_mut();
             let assets = world.resource::<AssetServer>();
             let handle: Handle<T> = assets.load::<T>(path.as_ref());
@@ -60,8 +60,8 @@ impl LoadResource for App {
                   assets: Res<Assets<T>>| {
                 for event in events.read() {
                     match event {
-                        AssetEvent::Modified { id } if *id == handle.id() => {
-                            if let Some(asset) = assets.get(&handle) {
+                        AssetEvent::Modified { id } if *id == _handle.id() => {
+                            if let Some(asset) = assets.get(&_handle) {
                                 commands.insert_resource(asset.clone());
                             }
                         }

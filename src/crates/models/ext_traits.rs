@@ -27,6 +27,7 @@ use bevy::gltf::GltfMesh;
 ///         ));
 ///     }
 /// ```
+#[allow(dead_code)]
 pub trait SpawnCollidingMesh {
     fn spawn_colliding_mesh(
         &mut self,

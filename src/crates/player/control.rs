@@ -191,6 +191,7 @@ pub fn crouch_in(
     Ok(())
 }
 
+#[allow(clippy::type_complexity)]
 pub fn crouch_out(
     on: Trigger<Completed<Crouch>>,
     cfg: Res<Config>,

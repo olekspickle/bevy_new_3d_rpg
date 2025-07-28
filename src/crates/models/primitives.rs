@@ -1,7 +1,7 @@
 use super::*;
 
 /// Macro to hide the derive trait boilerplate
-macro_rules! declare_markers {
+macro_rules! markers {
   ( $( $name:ident ),* ) => {
         $(
             #[derive(Component, Reflect, Clone)]
@@ -11,17 +11,16 @@ macro_rules! declare_markers {
     };
 }
 
-declare_markers!(
+markers!(
     SceneCamera,
     // scene
     Sun,
     Moon,
-    Combat,
-    Exploration,
-    Drama,
+    // Combat,
+    // Exploration,
     // TODO: The idea is to create a boombox with spatial audio
     // <https://github.com/bevyengine/bevy/blob/main/examples/audio/spatial_audio_3d.rs>
-    Boombox,
+    // Boombox,
     SunCycleLabel,
     // user input context
     GlobalInputCtx,
@@ -36,20 +35,22 @@ declare_markers!(
     TabBar,
     TabContent,
     DisabledButton,
-    Slider,
-    SliderThumb,
-    Checkbox,
+    // Slider,
+    // SliderThumb,
+    // Checkbox,
     GeneralVolumeLabel,
     MusicVolumeLabel,
     SfxVolumeLabel,
-    DiagnosticsLabel,
-    DebugUiLabel,
     SaveSettingsLabel,
+    VsyncLabel,
     FovLabel,
     // animations
     FadeIn,
     FadeOut
 );
+
+#[cfg(feature = "dev_native")]
+markers!(DiagnosticsLabel, DebugUiLabel);
 
 macro_rules! timers {
   ( $( $name:ident ),* ) => {

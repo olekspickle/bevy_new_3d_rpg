@@ -28,27 +28,28 @@ impl UiInteraction {
         hovered: (LIGHT_BLUE, WHITEISH),
         pressed: (DIM_BLUE, WHITEISH),
     };
-    pub fn all(c: Color) -> Self {
-        Self {
-            none: (c, c),
-            hovered: (c, c),
-            pressed: (c, c),
-        }
-    }
-    pub fn none(mut self, c: (Color, Color)) -> Self {
-        self.none = c;
-        self
-    }
-    pub fn pressed(mut self, c: (Color, Color)) -> Self {
-        self.pressed = c;
-        self
-    }
-    pub fn hovered(mut self, c: (Color, Color)) -> Self {
-        self.hovered = c;
-        self
-    }
+    // pub fn all(c: Color) -> Self {
+    //     Self {
+    //         none: (c, c),
+    //         hovered: (c, c),
+    //         pressed: (c, c),
+    //     }
+    // }
+    // pub fn none(mut self, c: (Color, Color)) -> Self {
+    //     self.none = c;
+    //     self
+    // }
+    // pub fn pressed(mut self, c: (Color, Color)) -> Self {
+    //     self.pressed = c;
+    //     self
+    // }
+    // pub fn hovered(mut self, c: (Color, Color)) -> Self {
+    //     self.hovered = c;
+    //     self
+    // }
 }
 
+#[allow(clippy::type_complexity)]
 fn apply_interaction_palette(
     mut palette_query: Query<
         (

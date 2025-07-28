@@ -10,7 +10,6 @@ pub use tracking::*;
 
 pub fn plugin(app: &mut App) {
     // start asset loading
-    //app.load_resource_from_path::<Fira>("fonts/FiraCode-Regular.ttf");
     app.add_plugins(tracking::plugin)
         .add_plugins(RonAssetPlugin::<Config>::default())
         .load_resource_from_path::<Config>("config.ron")
@@ -18,15 +17,25 @@ pub fn plugin(app: &mut App) {
         .load_resource_from_path::<Credits>("credits.ron")
         .load_resource::<AudioSources>()
         .load_resource::<Textures>()
+        // .load_resource::<Fonts>()
         .load_resource::<Models>();
 }
 
-#[derive(Asset, Clone, Reflect, Resource)]
-#[reflect(Resource)]
-pub struct Fonts {
-    #[dependency]
-    pub fira: Handle<Font>,
-}
+// #[derive(Asset, Clone, Reflect, Resource)]
+// #[reflect(Resource)]
+// pub struct Fonts {
+//     #[dependency]
+//     pub custom: Handle<Font>,
+// }
+//
+// impl FromWorld for Fonts {
+//     fn from_world(world: &mut World) -> Self {
+//         let assets = world.resource::<AssetServer>();
+//         Self {
+//             custom: assets.load("fonts/custom.ttf"),
+//         }
+//     }
+// }
 
 #[derive(Asset, Clone, Reflect, Resource)]
 #[reflect(Resource)]

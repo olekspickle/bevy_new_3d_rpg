@@ -66,7 +66,8 @@ pub fn on_go_to(trig: Trigger<GoTo>, mut next_screen: ResMut<NextState<Screen>>)
 pub mod to {
     use super::*;
 
-    pub fn title(_: Trigger<OnPress>, mut cmds: Commands) {
+    pub fn title(_: Trigger<OnPress>, mut cmds: Commands, mut state: ResMut<GameState>) {
+        state.reset();
         cmds.trigger(GoTo(Screen::Title));
     }
     pub fn settings(_: Trigger<OnPress>, mut cmds: Commands) {

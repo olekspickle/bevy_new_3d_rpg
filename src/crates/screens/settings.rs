@@ -1,4 +1,3 @@
-//! The settings screen accessible from the title screen.
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
