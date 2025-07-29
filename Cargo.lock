@@ -1240,7 +1240,6 @@ dependencies = [
  "bevy_skein",
  "bevy_third_person_camera",
  "bevy_top_down_camera",
- "firewheel-web-audio",
  "image",
  "iyes_perf_ui",
  "log",
@@ -2823,19 +2822,6 @@ dependencies = [
  "firewheel-core",
  "fixed-resample",
  "smallvec",
-]
-
-[[package]]
-name = "firewheel-web-audio"
-version = "0.1.0"
-source = "git+https://github.com/CorvusPrudens/firewheel-web-audio#b3912bce322d537e5f9ad766c6336a85b392d6d6"
-dependencies = [
- "firewheel",
- "js-sys",
- "log",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
 ]
 
 [[package]]

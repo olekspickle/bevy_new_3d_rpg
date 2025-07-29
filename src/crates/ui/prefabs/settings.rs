@@ -245,7 +245,7 @@ fn click_toggle_vsync(
     Ok(())
 }
 
-#[cfg(feature = "dev_native")]
+#[cfg(not(target_arch = "wasm32"))]
 fn click_toggle_diagnostics(
     _: Trigger<Pointer<Click>>,
     mut commands: Commands,
@@ -274,7 +274,7 @@ fn click_toggle_diagnostics(
     }
 }
 
-#[cfg(feature = "dev_native")]
+#[cfg(not(target_arch = "wasm32"))]
 fn clock_toggle_debug_ui(
     _: Trigger<Pointer<Click>>,
     mut commands: Commands,
@@ -350,7 +350,6 @@ pub fn settings_ui() -> impl Bundle {
             children![
                 tab_bar(),
                 (TabContent, Node::default(), children![audio_grid()]),
-                // keybindings(),
                 navigation()
             ]
         )],
@@ -426,6 +425,7 @@ fn video_grid(cycle: &SunCycle) -> impl Bundle {
             align_items: AlignItems::Center,
             ..default()
         },
+        #[cfg(target_arch = "wasm32")]
         children![
             label("Sun cycle"),
             (btn(cycle.as_str(), click_toggle_sun_cycle), SunCycleLabel),
@@ -434,18 +434,21 @@ fn video_grid(cycle: &SunCycle) -> impl Bundle {
             // TODO: do checkboxes when feathers
             label("VSync"),
             (btn("on", click_toggle_vsync), VsyncLabel),
-            #[cfg(feature = "dev_native")]
-            dev_native_knobs()
         ],
-    )
-}
-
-fn dev_native_knobs() -> impl Bundle {
-    (
-        label("diagnostics"),
-        (btn("on", click_toggle_diagnostics), DiagnosticsLabel),
-        label("debug ui"),
-        (btn("off", clock_toggle_debug_ui), DebugUiLabel),
+        #[cfg(not(target_arch = "wasm32"))]
+        children![
+            label("Sun cycle"),
+            (btn(cycle.as_str(), click_toggle_sun_cycle), SunCycleLabel),
+            label("FOV"),
+            fov(),
+            // TODO: do checkboxes when feathers
+            label("VSync"),
+            (btn("on", click_toggle_vsync), VsyncLabel),
+            label("diagnostics"),
+            (btn("on", click_toggle_diagnostics), DiagnosticsLabel),
+            label("debug ui"),
+            (btn("off", clock_toggle_debug_ui), DebugUiLabel),
+        ],
     )
 }
 

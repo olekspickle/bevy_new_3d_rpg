@@ -43,17 +43,17 @@ use bevy::prelude::*;
 use bevy_seedling::{pool::SamplerPool, prelude::*};
 
 pub fn plugin(app: &mut App) {
-    #[cfg(target_arch = "wasm32")]
-    app.add_plugins(
-        bevy_seedling::SeedlingPlugin::<firewheel_web_audio::WebAudioBackend> {
-            config: Default::default(),
-            stream_config: Default::default(),
-            spawn_default_pool: true,
-            pool_size: 4..=32,
-        },
-    );
-
-    #[cfg(not(target_arch = "wasm32"))]
+    // #[cfg(target_arch = "wasm32")]
+    // app.add_plugins(
+    //     bevy_seedling::SeedlingPlugin::<firewheel_web_audio::WebAudioBackend> {
+    //         config: Default::default(),
+    //         stream_config: Default::default(),
+    //         spawn_default_pool: true,
+    //         pool_size: 4..=32,
+    //     },
+    // );
+    //
+    // #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(bevy_seedling::SeedlingPlugin::default());
 
     app.add_systems(Startup, spawn_pools);

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_seedling::prelude::*;
 
 mod camera;
-#[cfg(any(feature = "dev_native", not(feature = "web")))]
+#[cfg(any(feature = "dev_native", not(target_arch = "wasm32")))]
 mod dev_tools;
 mod mood;
 
@@ -15,7 +15,7 @@ pub fn plugin(app: &mut App) {
         scene::plugin,
         player::plugin,
         mood::plugin,
-        #[cfg(any(feature = "dev_native", not(feature = "web")))]
+        #[cfg(any(feature = "dev_native", not(target_arch = "wasm32")))]
         dev_tools::plugin,
     ));
 }

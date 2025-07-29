@@ -120,10 +120,6 @@
 # [profile.dev]
 # debug = 1
 
-# wasm setup to run audio in separate thread to avoid stuttering audio on start
-[target.wasm32-unknown-unknown]
-rustflags = ["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
-
 # For this you'll need a nightly version of the compiler
 # [unstable]
 # build-std = ["std", "core", "alloc", "panic_abort"]
