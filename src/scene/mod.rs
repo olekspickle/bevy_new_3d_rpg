@@ -1,6 +1,5 @@
-use super::*;
+use crate::*;
 use avian3d::prelude::*;
-use bevy::prelude::*;
 use bevy_skein::SkeinPlugin;
 
 mod skybox;

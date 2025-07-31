@@ -8,9 +8,20 @@ use bevy_fix_cursor_unlock_web::prelude::*;
 use std::io::Cursor;
 use winit::window::Icon;
 
-mod crates;
+pub mod asset_loading;
+pub mod audio;
+pub mod game;
+pub mod models;
+pub mod player;
+pub mod scene;
+pub mod screens;
+pub mod ui;
 
-use crates::*;
+use asset_loading::{AudioSources, Models, ResourceHandles, Textures};
+use audio::*;
+use models::*;
+use scene::*;
+use ui::*;
 
 fn main() {
     let mut app = App::new();
@@ -56,7 +67,7 @@ fn main() {
         audio::plugin,
         asset_loading::plugin,
         ui::plugin,
-        screens::plugin,
+        game::plugin,
     ))
     .add_systems(Startup, set_window_icon);
 

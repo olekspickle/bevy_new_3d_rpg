@@ -44,10 +44,11 @@ If you want to use serving with hotpatching, you can use dioxus-cli:
 - Windows PS:`$env:BEVY_ASSET_ROOT="." ; dx serve --hot-patch`
 
 ## Features:
-- [x] flat cargo workspace based project structure for game logic crates that can grow and be maintainable
+- [x] flat cargo project structure for game logic crates that can grow and be maintainable
 - [x] import and usage of game mechanics and parameters from .ron (config, credits) (kudos to Caudiciform)
 - [x] simple asset loading based on [bevy_asset_loader] with loading from path addition (kudos to Caudiciform)
 - [x] third person camera with [bevy_third_person_camera]
+- [x] top down camera with [bevy_top_down_camera]
 - [x] solid keyboard & gamepad mapping to ui & game actions using [bevy_enhanced_input]
 - [x] simple scene with colliders and rigid bodies using [avian3d]
 - [x] simple player movement using [bevy_tnua]
@@ -85,16 +86,16 @@ This template comes with a basic project structure that you may find useful:
 ### Project structure
 | Path                                                  | Description                                                           |
 | ----------------------------------------------------- | --------------------------------------------------------------------- |
-| [`src/main.rs`](./src/main.rs)                        | App entrypoint where system plugins and window set up                 |
 | [`assets`](./assets)                                  | Asset directory                                                       |
-| [`crates/asset_loading`](./src/crates/asset_loading)  | A high-level way to load collections of asset handles as resources    |
-| [`crates/models`](./src/crates/models)                | Data source for the game: inputs, markers, timers                     |
-| [`crates/audio`](./src/crates/audio)                  | Marker components for sound effects and music, bus setup              |
-| [`crates/screens`](./src/crates/screens)              | Splash/title/gameplay and other screen related systems and ui         |
-| [`crates/scene`](./src/crates/scene)                  | Scene setup, skybox                                                   |
-| [`crates/game`](./src/crates/game)                    | Game mechanics & content                                              |
-| [`crates/player`](./src/crates/player)                | Player control & animation                                            |
-| [`crates/ui`](./src/crates/ui)                        | Reusable UI widgets & game color pallet control                       |
+| [`src/main.rs`](./src/main.rs)                        | App entrypoint where system plugins and window set up                 |
+| [`src/asset_loading`](./src/asset_loading)            | A high-level way to load collections of asset handles as resources    |
+| [`src/models`](./src/models)                          | Data source for the game: inputs, markers, timers                     |
+| [`src/audio`](./src/audio)                            | Marker components for sound effects and music, bus setup              |
+| [`src/scene`](./src/scene)                            | Scene setup, skybox                                                   |
+| [`src/player`](./src/player)                          | Player control & animation                                            |
+| [`src/game`](./src/game)                              | Game mechanics & content                                              |
+| [`src/ui`](./src/ui)                                  | Reusable UI widgets & game color pallet control                       |
+| [`src/screens`](./src/screens)                        | Splash/title/gameplay and other screen related systems and ui         |
 
 Feel free to move things around however you want, though
 
@@ -196,6 +197,7 @@ The source code in this repository is licensed under any of the following at you
 [bevy-learn]: https://bevyengine.org/learn/
 [bevy_seedling]: https://github.com/CorvusPrudens/bevy_seedling
 [bevy_third_person_camera]: https://github.com/The-DevBlog/bevy_third_person_camera
+[bevy_top_down_camera]: https://github.com/olekspickle/bevy_top_down_camera
 [bevy_tnua]: https://github.com/idanarye/bevy-tnua
 [Bevy Cheat Book]: https://bevy-cheatbook.github.io/introduction.html
 [BevyFlock]: https://github.com/TheBevyFlock/bevy_new_2d

@@ -1,5 +1,4 @@
-use super::*;
-use bevy::prelude::*;
+use crate::*;
 use bevy_seedling::prelude::*;
 
 mod camera;
@@ -17,6 +16,7 @@ pub fn plugin(app: &mut App) {
         mood::plugin,
         #[cfg(any(feature = "dev_native", not(target_arch = "wasm32")))]
         dev_tools::plugin,
+        screens::plugin,
     ));
 }
 

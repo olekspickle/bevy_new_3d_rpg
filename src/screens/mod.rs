@@ -1,7 +1,7 @@
 //! The game's main screen states and transitions between them.
 
-use super::*;
-use bevy::{prelude::*, ui::Val::*};
+use crate::*;
+use bevy::ui::Val::*;
 use bevy_seedling::prelude::*;
 
 mod credits;
