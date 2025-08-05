@@ -25,7 +25,8 @@ This template is based on the awesome [BevyFlock 2D template][BevyFlock] featuri
 - macOS
 - Web (Wasm)
 This template is a great way to get started if you aim to build new 3D RPG [Bevy] game!
-It is not as simple as bevy_new_2d which is aimed to an easy start. It focuses to have a rather solid structure to be able to carry the weight of big projects and tries to follow the [flat architercture](#project-structure) principle.
+It is not as simple as bevy_new_2d which is aimed to an easy start and no dependencies.
+It focuses instead to a rather solid starting template with some basic bells and whistles to be able to carry the weight of big projects and tries to follow the [flat architercture](#project-structure) principle.
 Start with a [basic project](#write-your-game) and [CI / CD](#release-your-game) that can deploy to [itch.io](https://itch.io).
 You can [try this template in your browser!](https://olekspickle.itch.io/bevy-3d-rpg)
 
@@ -64,15 +65,15 @@ If you want to use serving with hotpatching, you can use dioxus-cli:
 - [ ] add basic mood change per zone
 - [ ] implement different music states(exploration, combat)
 - [ ] custom font replace example using pre-loaded font
+- [ ] Movement sfx sounds: jump, dash, sprint
 - [ ] sky background instead of just void lol
-- [ ] Movement sfx: jump, dash, sprint
 - [ ] spatial audio demo: boombox emitting background music
 - [ ] Jump with timer(tricky with tnua jump in air counter)
 - [ ] small door/portal demo
 - [ ] split screen for coop
 - [ ] vault on objects if they are reachable
 - [ ] climbing
-- [ ] do not rotate player on aim(silly bug, check it out - release aim looking to the floor)
+- [ ] do not rotate player on aim(silly bug, if you release aim looking to the floor - player model left rotated parallel to the floor)
 - [ ] basic fighting: punch, kick, take weapon
 - [ ] weapon select wheel
 - [ ] bow
@@ -106,19 +107,19 @@ There are some helpful commands in [Makefile](./Makefile) to simplify build opti
 But generally running your game locally is very simple:
 
 <details>
-    <summary><ins>Bevy CLI</ins></summary>
+    <summary><ins>with bevy_cli</ins></summary>
 
-    - Dev: `bevy run` to run a native dev build
-    - Release: `bevy run --release` to run a native release build
+- Dev: `bevy run` to run a native dev build
+- Release: `bevy run --release` to run a native release build
 - Use `bevy run --release web` to run a web release build
 To run a **web** dev build to run audio in separate thread to avoid audio stuttering:
 - :`bash bevy run web --headers="Cross-Origin-Opener-Policy:same-origin" --headers="Cross-Origin-Embedder-Policy:credentialless" `
 </details>
 
 <details>
-    <summary><ins>CMake</ins></summary>
+    <summary><ins>with cmake</ins></summary>
 
-    - Dev: `make run` to run a **native** dev build
+- Dev: `make run` to run a **native** dev build
 - Release: `make build` to build a **native** release build
 - Web: `make run-web` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
 </details>

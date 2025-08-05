@@ -1,4 +1,5 @@
 use crate::*;
+use avian3d::prelude::*;
 use bevy_seedling::prelude::*;
 
 mod camera;

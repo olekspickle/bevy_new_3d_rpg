@@ -26,7 +26,9 @@ pub use settings::*;
 pub use states::*;
 
 pub fn plugin(app: &mut App) {
+    // register for skein
     app.add_plugins((
+        primitives::plugin,
         settings::plugin,
         states::plugin,
         input::plugin,

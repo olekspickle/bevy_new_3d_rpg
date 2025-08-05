@@ -183,7 +183,6 @@ fn update_music_volume_label(
     settings: Res<Settings>,
     mut label: Single<&mut Text, With<MusicVolumeLabel>>,
 ) {
-    info!("music volume: {}", settings.sound.music);
     let percent = (settings.sound.music * 100.0).round();
     let text = format!("{percent: <3}%"); // pad the percent to 3 chars
     label.0 = text;

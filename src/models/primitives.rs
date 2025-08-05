@@ -1,5 +1,12 @@
 use super::*;
 
+pub fn plugin(app: &mut App) {
+    // register for skein
+    app.register_type::<Zone>()
+        .register_type::<Combat>()
+        .register_type::<Exploration>();
+}
+
 /// Macro to hide the derive trait boilerplate
 macro_rules! markers {
   ( $( $name:ident ),* ) => {
@@ -16,8 +23,9 @@ markers!(
     // scene
     Sun,
     Moon,
-    // Combat,
-    // Exploration,
+    Zone,
+    Combat,
+    Exploration,
     // TODO: The idea is to create a boombox with spatial audio
     // <https://github.com/bevyengine/bevy/blob/main/examples/audio/spatial_audio_3d.rs>
     // Boombox,

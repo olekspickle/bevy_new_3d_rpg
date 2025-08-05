@@ -3,8 +3,7 @@
 use super::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app
-        .add_systems(OnEnter(Screen::Gameplay), spawn_gameplay_ui)
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_gameplay_ui)
         .add_observer(toggle_mute)
         .add_observer(toggle_pause)
         .add_observer(trigger_menu_toggle_on_esc)

@@ -1,16 +1,18 @@
 //! An abstraction for changing mood of the game depending on some triggers
 use super::*;
+use bevy::ecs::{component::ComponentId, observer::TriggerTargets};
 use rand::prelude::*;
 
-// const FADE_TIME: f32 = 2.0;
+const FADE_TIME: f32 = 2.0;
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnExit(Screen::Gameplay), stop_soundtrack)
         .add_systems(OnEnter(Screen::Gameplay), start_soundtrack)
-        // .add_systems(
-        //     Update,
-        //     (fade_in, fade_out).run_if(in_state(Screen::Gameplay)),
-        // )
+        .add_systems(
+            Update,
+            trigger_mood_change.run_if(in_state(Screen::Gameplay)), // (fade_in, fade_out)
+        )
+        // .add_observer(trigger_mood_change)
         .add_observer(change_mood);
 }
 
@@ -49,12 +51,43 @@ fn stop_soundtrack(
     }
 }
 
+// fn check_sensor_collision(mut collision_query: Query<(&CollidingEntities, &Sensor), With<Player>>) {
+//     for (colliding_entities, sensor) in collision_query.iter() {
+//         if !colliding_entities.is_empty() {
+//             println!("hello");
+//         }
+//     }
+// }
+fn trigger_mood_change(
+    // on: Trigger<CollisionStarted>,
+    mut commands: Commands,
+    mut zones: Query<Entity, With<Zone>>,
+    mut player: Query<Entity, With<Player>>,
+    collisions: Collisions,
+) {
+    let Ok(player) = player.single_mut() else {
+        return;
+    };
+    for zone in zones.iter() {
+        if collisions.contains(player, zone) {
+            let ids: Vec<ComponentId> = zone.components().collect();
+            info!("components:{ids:?}");
+            // let zone = commands.entity(zone);
+            // if
+            info!("sensors: player:{player}, zone:{zone}");
+        }
+    }
+    // for zone in zones.iter() {}
+    // info!("is_player a:{}, b:{}", commands.entity(a));
+}
+
 // Every time the GameState resource changes, this system is run to trigger the song change.
 fn change_mood(
     on: Trigger<ChangeMood>,
     settings: Res<Settings>,
     sources: Res<AudioSources>,
     mut state: ResMut<GameState>,
+    mut collisions: Query<(&Zone, &Sensor), With<Player>>,
     music: Query<Entity, With<SamplerPool<Music>>>,
     mut commands: Commands,
 ) {
