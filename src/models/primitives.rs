@@ -11,7 +11,7 @@ pub fn plugin(app: &mut App) {
 macro_rules! markers {
   ( $( $name:ident ),* ) => {
         $(
-            #[derive(Component, Reflect, Clone)]
+            #[derive(Component, Reflect, Clone, Default)]
             #[reflect(Component)]
             pub struct $name;
         )*
@@ -30,8 +30,11 @@ markers!(
     // <https://github.com/bevyengine/bevy/blob/main/examples/audio/spatial_audio_3d.rs>
     // Boombox,
     SunCycleLabel,
-    // user input context
-    GlobalInputCtx,
+    // user input contexts
+    GlobalCtx,
+    PlayerCtx,
+    ModalCtx,
+    TopDownCtx,
     // UI: mostly for nodes or labels that have to change visibility or content at some point
     PerfUi,
     GameplayUi,

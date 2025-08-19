@@ -4,8 +4,8 @@ pub fn plugin(app: &mut App) {
     app.add_event::<Back>()
         .add_event::<GoTo>()
         .add_event::<OnPress>()
-        .add_event::<SwitchInputCtx>()
         .add_event::<ChangeMood>()
+        .add_event::<SettingsChanged>()
         .add_event::<SwitchTab>()
         .add_event::<NewModal>()
         .add_event::<PopModal>()
@@ -55,21 +55,7 @@ pub struct ChangeMood(pub MoodType);
 #[derive(Event)]
 pub struct OnPress;
 #[derive(Event)]
-pub struct SwitchInputCtx {
-    pub ctx: Context,
-    pub entity: Entity,
-}
-impl SwitchInputCtx {
-    pub fn new(entity: Entity, ctx: Context) -> Self {
-        Self { entity, ctx }
-    }
-    pub fn from_context(ctx: Context) -> Self {
-        Self {
-            entity: Entity::PLACEHOLDER,
-            ctx,
-        }
-    }
-}
+pub struct SettingsChanged;
 
 // ================== trigger events on input ========================
 fn back(

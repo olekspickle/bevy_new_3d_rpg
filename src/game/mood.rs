@@ -59,7 +59,6 @@ fn stop_soundtrack(
 //     }
 // }
 fn trigger_mood_change(
-    // on: Trigger<CollisionStarted>,
     mut commands: Commands,
     mut zones: Query<Entity, With<Zone>>,
     mut player: Query<Entity, With<Player>>,
@@ -72,13 +71,9 @@ fn trigger_mood_change(
         if collisions.contains(player, zone) {
             let ids: Vec<ComponentId> = zone.components().collect();
             info!("components:{ids:?}");
-            // let zone = commands.entity(zone);
-            // if
             info!("sensors: player:{player}, zone:{zone}");
         }
     }
-    // for zone in zones.iter() {}
-    // info!("is_player a:{}, b:{}", commands.entity(a));
 }
 
 // Every time the GameState resource changes, this system is run to trigger the song change.

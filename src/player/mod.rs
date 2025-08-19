@@ -87,12 +87,7 @@ pub fn spawn_player(
                 #[cfg(feature = "top_down")]
                 TopDownCameraTarget,
             ),
-            // input context
-            (
-                GameplayCtx,
-                CurrentCtx(Context::Gameplay),
-                Actions::<GameplayCtx>::default(),
-            ),
+            PlayerCtx,
             // tnua stuff
             (
                 TnuaController::default(),
@@ -150,8 +145,5 @@ fn player_post_spawn(
     if let Ok(mut p) = players.get_mut(player) {
         p.id = player; // update player id with spawned entity
     }
-    commands.trigger(SwitchInputCtx::new(player, Context::Gameplay));
-    // We need global context to handle input on main menu, when no players spawned yet
-    // but we have to reset it manually when one is spawned
-    commands.trigger(SwitchInputCtx::from_context(Context::Gameplay));
+    info!("player entity:{player}");
 }

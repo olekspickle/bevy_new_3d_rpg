@@ -90,7 +90,7 @@ bevy_third_person_camera = { version = "0.3", optional = true }     # 3rd person
 bevy_top_down_camera = { version = "0.1", optional = true }         # top down camera
 bevy-tnua = "0.24"                      # floating character control
 bevy-tnua-avian3d = "0.5"               # tnua-avian interaction
-bevy_enhanced_input = "0.12"            # keyboard/gamepad input
+bevy_enhanced_input = "0.15"            # keyboard/gamepad input
 
 # misc
 # itertools = "0.14.0"

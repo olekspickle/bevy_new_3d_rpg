@@ -17,7 +17,7 @@ fn movement_sound(
     settings: Res<Settings>,
     sources: ResMut<AudioSources>,
     tnua: Query<&TnuaController, With<Player>>,
-    actions: Single<&Actions<GameplayCtx>>,
+    crouch: Single<&Action<Crouch>>,
     mut cmds: Commands,
     mut step_timer: Query<&mut StepTimer, With<Player>>,
 ) -> Result {
@@ -36,7 +36,8 @@ fn movement_sound(
     if step_timer.tick(time.delta()).just_finished() && basis.standing_on_entity().is_some() {
         let mut rng = thread_rng();
         let i = rng.gen_range(0..sources.steps.len());
-        let handle = if actions.value::<Crouch>()?.as_bool() {
+        let crouch = ***crouch;
+        let handle = if crouch {
             // TODO: select crouch steps
             sources.steps[i].clone()
         } else {

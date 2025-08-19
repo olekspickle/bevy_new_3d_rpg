@@ -9,6 +9,11 @@ use bevy::{
 };
 use std::fmt::Write;
 
+const GAP: Val = Vw(1.0);
+const DARK_TEXT: TextColor = TextColor(Color::srgb(0.1, 0.1, 0.1));
+const PADDING: UiRect = UiRect::all(Val::Px(15.0));
+const PANEL_BACKGROUND: BackgroundColor = BackgroundColor(Color::srgb(0.8, 0.8, 0.8));
+
 pub fn plugin(app: &mut App) {
     app.add_systems(
         Update,
@@ -23,7 +28,7 @@ pub fn plugin(app: &mut App) {
     );
 }
 
-pub fn keybind_editor(keybind: &Keybind) -> impl Bundle {
+pub fn keybind_editor(keybind: &InputSettings) -> impl Bundle {
     // We use separate root node to let dialogs cover the whole UI.
     (
         Node {
@@ -36,8 +41,8 @@ pub fn keybind_editor(keybind: &Keybind) -> impl Bundle {
                 flex_direction: FlexDirection::Column,
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                padding: UiRect::all(Vw(1.0)),
-                row_gap: Vw(1.0),
+                padding: UiRect::all(GAP),
+                row_gap: GAP,
                 ..Default::default()
             },
             children![
@@ -52,8 +57,8 @@ pub fn keybind_editor(keybind: &Keybind) -> impl Bundle {
                     },
                     children![(
                         SettingsButton,
-                        Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
-                            parent.spawn(Text::new("Apply")).observe(apply);
+                        Children::spawn(SpawnWith(move |spawner: &mut ChildSpawner| {
+                            spawner.spawn(Text::new("Apply")).observe(apply);
                         }))
                     )],
                 )
@@ -62,86 +67,80 @@ pub fn keybind_editor(keybind: &Keybind) -> impl Bundle {
     )
 }
 
-/// Creates [`SettingsField`] from passed field.
+/// Returns name of the field.
 ///
 /// Strips everything before first `.` in order to turn "settings.field_name" into just "field_name".
-macro_rules! settings_field {
+macro_rules! field_name {
     ($path:expr) => {{
         let _validate_field = &$path;
         let full_path = stringify!($path);
-        let field_name = full_path
+        full_path
             .split_once('.')
             .map(|(_, s)| s)
-            .unwrap_or(full_path);
-        SettingsField(field_name)
+            .unwrap_or(full_path)
     }};
 }
 
-/// Stores name of the [`Settings`] field.
+/// Stores name of the [`KeyboardSettings`] field and its array index for which the binding is associated.
 ///
 /// Used to utilize reflection when applying settings.
 #[derive(Component, Clone, Copy)]
-struct SettingsField(&'static str);
+struct BindingInfo {
+    field_name: &'static str,
+    index: usize,
+}
 
-/// Number of input columns.
-const INPUTS_PER_ACTION: usize = 3;
-
-fn actions_grid(keybind: Keybind) -> impl Bundle {
+fn actions_grid(keybind: InputSettings) -> impl Bundle {
     (
         Node {
             display: Display::Grid,
-            column_gap: Vw(1.0),
-            row_gap: Vw(1.0),
-            grid_template_columns: vec![GridTrack::auto(); INPUTS_PER_ACTION + 1],
+            column_gap: GAP,
+            row_gap: GAP,
+            grid_template_columns: vec![GridTrack::auto(); BINDINGS_COUNT + 1],
             ..Default::default()
         },
         // We could utilzie reflection to iterate over fields,
         // but in real application you most likely want to have a nice and translatable text on buttons.
         Children::spawn((
-            action_row("Forward", settings_field!(keybind.forward), keybind.forward),
-            action_row("Left", settings_field!(keybind.left), keybind.left),
-            action_row(
-                "Backward",
-                settings_field!(keybind.backward),
-                keybind.backward,
-            ),
-            action_row("Right", settings_field!(keybind.right), keybind.right),
-            action_row("Jump", settings_field!(keybind.jump), keybind.jump),
-            action_row("Crouch", settings_field!(keybind.crouch), keybind.crouch),
-            action_row("Dash", settings_field!(keybind.dash), keybind.dash),
-            action_row("Sprint", settings_field!(keybind.sprint), keybind.sprint),
+            action_row("Forward", field_name!(keybind.forward), keybind.forward),
+            action_row("Left", field_name!(keybind.left), keybind.left),
+            action_row("Backward", field_name!(keybind.backward), keybind.backward),
+            action_row("Right", field_name!(keybind.right), keybind.right),
+            action_row("Jump", field_name!(keybind.jump), keybind.jump),
+            action_row("Crouch", field_name!(keybind.crouch), keybind.crouch),
+            action_row("Dash", field_name!(keybind.dash), keybind.dash),
+            action_row("Sprint", field_name!(keybind.sprint), keybind.sprint),
         )),
     )
 }
 
 fn action_row(
-    name: &'static str,
-    field: SettingsField,
-    inputs: Vec<Input>,
+    action_name: &'static str,
+    field_name: &'static str,
+    bindings: [Binding; BINDINGS_COUNT],
 ) -> impl SpawnableList<ChildOf> {
     (
-        Spawn(Text::new(name)),
-        SpawnWith(move |parent: &mut RelatedSpawner<_>| {
-            for index in 0..INPUTS_PER_ACTION {
-                let input = inputs.get(index).copied();
-                parent.spawn((
+        Spawn((Text::new(action_name), DARK_TEXT)),
+        SpawnWith(move |spawner: &mut ChildSpawner| {
+            for (index, binding) in bindings.into_iter().enumerate() {
+                spawner.spawn((
                     Node {
-                        column_gap: Vw(1.0),
+                        column_gap: GAP,
                         align_items: AlignItems::Center,
                         ..Default::default()
                     },
-                    Children::spawn(SpawnWith(move |parent: &mut RelatedSpawner<_>| {
-                        let button_entity = parent
+                    Children::spawn(SpawnWith(move |spawner: &mut ChildSpawner| {
+                        let binding_button = spawner
                             .spawn((
-                                field,
-                                Name::new(name),
-                                InputButton { input },
-                                children![Text::default()], // Will be updated automatically on `InputButton` insertion
+                                BindingInfo { field_name, index },
+                                Name::new(action_name),
+                                BindingButton { binding },
+                                children![Text::default()], // Will be updated automatically on `BindingButton` insertion
                             ))
                             .observe(show_binding_dialog)
                             .id();
-                        parent
-                            .spawn((DeleteButton { button_entity }, children![Text::new("X")]))
+                        spawner
+                            .spawn((DeleteButton { binding_button }, children![Text::new("X")]))
                             .observe(delete_binding);
                     })),
                 ));
@@ -152,15 +151,15 @@ fn action_row(
 
 fn delete_binding(
     trigger: Trigger<Pointer<Click>>,
-    mut input_buttons: Query<(&Name, &mut InputButton)>,
+    mut binding_buttons: Query<(&Name, &mut BindingButton)>,
     delete_buttons: Query<&DeleteButton>,
 ) {
     let delete_button = delete_buttons.get(trigger.target()).unwrap();
-    let (name, mut input_button) = input_buttons
-        .get_mut(delete_button.button_entity)
-        .expect("delete button should point to an input button");
+    let (name, mut binding_button) = binding_buttons
+        .get_mut(delete_button.binding_button)
+        .expect("delete button should point to a binding button");
     info!("deleting binding for '{name}'");
-    input_button.input = None;
+    binding_button.binding = Binding::None;
 }
 
 fn show_binding_dialog(
@@ -174,18 +173,25 @@ fn show_binding_dialog(
 
     commands.entity(*root_entity).with_child((
         BindingDialog {
-            button_entity: trigger.target(),
+            binding_button: trigger.target(),
         },
         children![(
             Node {
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Vw(1.0)),
-                row_gap: Vw(1.0),
+                padding: PADDING,
+                row_gap: GAP,
                 ..Default::default()
             },
-            BackgroundColor(WHITEISH),
-            children![label(
-                "Binding \"{name}\", \npress any key or Esc to cancel"
+            PANEL_BACKGROUND,
+            children![(
+                TextLayout {
+                    justify: JustifyText::Center,
+                    ..Default::default()
+                },
+                DARK_TEXT,
+                Text::new(format!(
+                    "Binding \"{name}\", \npress any key or Esc to cancel",
+                )),
             )]
         )],
     ));
@@ -197,7 +203,7 @@ fn bind(
     mut mouse_button_events: EventReader<MouseButtonInput>,
     dialog: Single<(Entity, &BindingDialog)>,
     root_entity: Single<Entity, (With<Node>, Without<ChildOf>)>,
-    mut buttons: Query<(Entity, &Name, &mut InputButton)>,
+    mut buttons: Query<(Entity, &Name, &mut BindingButton)>,
 ) {
     let keys = key_events
         .read()
@@ -208,47 +214,47 @@ fn bind(
         .filter(|event| event.state == ButtonState::Pressed)
         .map(|event| event.button.into());
 
-    let Some(input) = keys.chain(mouse_buttons).next() else {
+    let Some(binding) = keys.chain(mouse_buttons).next() else {
         return;
     };
 
     let (dialog_entity, dialog) = *dialog;
 
-    if let Some((conflict_entity, name, _)) = buttons
+    if let Some((conflict_button, name, _)) = buttons
         .iter()
-        .find(|(.., button)| button.input == Some(input))
+        .find(|(.., button)| button.binding == binding)
     {
-        info!("found conflict with '{name}' for '{input}'");
+        info!("found conflict with '{name}' for '{binding}'");
 
         commands.entity(*root_entity).with_child((
             ConflictDialog {
-                button_entity: dialog.button_entity,
-                conflict_entity,
+                binding_button: dialog.binding_button,
+                conflict_button,
             },
             children![(
                 Node {
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
-                    padding: UiRect::all(Vw(1.0)),
-                    row_gap: Vw(1.0),
+                    padding: PADDING,
+                    row_gap: GAP,
                     ..Default::default()
                 },
-                BackgroundColor(WHITEISH),
+                PANEL_BACKGROUND,
                 children![
                     (
-                        TextColor(super::GRAY),
-                        Text::new(format!("\"{input}\" is already used by \"{name}\"",)),
+                        DARK_TEXT,
+                        Text::new(format!("\"{binding}\" is already used by \"{name}\"",)),
                     ),
                     (
                         Node {
-                            column_gap: Vw(1.0),
+                            column_gap: GAP,
                             ..Default::default()
                         },
-                        Children::spawn(SpawnWith(|parent: &mut RelatedSpawner<_>| {
-                            parent
+                        Children::spawn(SpawnWith(|spawner: &mut RelatedSpawner<_>| {
+                            spawner
                                 .spawn((SettingsButton, children![Text::new("Replace")]))
                                 .observe(replace_binding);
-                            parent
+                            spawner
                                 .spawn((SettingsButton, children![Text::new("Cancel")]))
                                 .observe(cancel_replace_binding);
                         }))
@@ -258,84 +264,109 @@ fn bind(
         ));
     } else {
         let (_, name, mut button) = buttons
-            .get_mut(dialog.button_entity)
-            .expect("binding dialog should point to a button with input");
-        info!("assigning '{input}' to '{name}'");
-        button.input = Some(input);
+            .get_mut(dialog.binding_button)
+            .expect("binding dialog should point to a button with binding");
+        info!("assigning '{binding}' to '{name}'");
+        button.binding = binding;
     }
 
     commands.entity(dialog_entity).despawn();
 }
 
-fn cancel_binding(mut commands: Commands, dialog_entity: Single<Entity, With<BindingDialog>>) {
+fn cancel_binding(mut commands: Commands, dialog: Single<Entity, With<BindingDialog>>) {
     info!("cancelling binding");
-    commands.entity(*dialog_entity).despawn();
+    commands.entity(*dialog).despawn();
 }
 
 fn replace_binding(
-    _trigger: Trigger<Pointer<Click>>,
+    _on: Trigger<Pointer<Click>>,
     mut commands: Commands,
     dialog: Single<(Entity, &ConflictDialog)>,
-    mut buttons: Query<(&Name, &mut InputButton)>,
+    mut buttons: Query<(&Name, &mut BindingButton)>,
 ) {
     let (dialog_entity, dialog) = *dialog;
     let (_, mut conflict_button) = buttons
-        .get_mut(dialog.conflict_entity)
+        .get_mut(dialog.conflict_button)
         .expect("binding conflict should point to a button");
-    let input = conflict_button.input;
-    conflict_button.input = None;
+    let binding = conflict_button.binding;
+    conflict_button.binding = Binding::None;
 
-    let (name, mut button) = buttons
-        .get_mut(dialog.button_entity)
+    let (name, mut binding_button) = buttons
+        .get_mut(dialog.binding_button)
         .expect("binding should point to a button");
-    button.input = input;
+    binding_button.binding = binding;
 
     info!("reassigning binding to '{name}'");
     commands.entity(dialog_entity).despawn();
 }
 
 fn cancel_replace_binding(
-    _trigger: Trigger<Pointer<Click>>,
+    _on: Trigger<Pointer<Click>>,
     mut commands: Commands,
-    dialog_entity: Single<Entity, With<ConflictDialog>>,
+    dialog: Single<Entity, With<ConflictDialog>>,
 ) {
     info!("cancelling replace binding");
-    commands.entity(*dialog_entity).despawn();
+    commands.entity(*dialog).despawn();
 }
 
 fn apply(
-    _trigger: Trigger<Pointer<Click>>,
+    _on: Trigger<Pointer<Click>>,
     mut commands: Commands,
     mut settings: ResMut<Settings>,
-    buttons: Query<(&InputButton, &SettingsField)>,
+    buttons: Query<(&BindingButton, &BindingInfo)>,
 ) {
-    settings.keybind.clear();
-    for (button, field) in &buttons {
-        if let Some(input) = button.input {
-            // Utilize reflection to write by field name.
-            let field_value = settings
-                .path_mut::<Vec<Input>>(field.0)
-                .expect("fields with bindings should be stored as Vec");
-            field_value.push(input);
-        }
+    settings.input_map.clear();
+    for (button, info) in &buttons {
+        // Utilize reflection to write by field name.
+        let field_value = settings
+            .path_mut::<[Binding; BINDINGS_COUNT]>(info.field_name)
+            .expect("fields with bindings should be stored as Vec");
+        field_value[info.index] = button.binding;
     }
 
-    commands.trigger(RebuildBindings);
+    commands.trigger(SettingsChanged);
+
+    match settings.save() {
+        Ok(()) => info!("writing settings to '{SETTINGS_PATH}'"),
+        Err(e) => error!("unable to write settings to '{SETTINGS_PATH}': {e}"),
+    }
 }
 
 fn update_button_text(
-    buttons: Query<(&InputButton, &Children), Changed<InputButton>>,
+    buttons: Query<(&BindingButton, &Children), Changed<BindingButton>>,
     mut text: Query<&mut Text>,
 ) {
     for (button, children) in &buttons {
         let mut iter = text.iter_many_mut(children);
         let mut text = iter.fetch_next().unwrap();
         text.clear();
-        if let Some(input) = button.input {
-            write!(text, "{input}").unwrap();
-        } else {
-            write!(text, "Empty").unwrap();
+        write!(text, "{}", button.binding).unwrap();
+    }
+}
+
+fn update_button_background(
+    mut buttons: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<Button>)>,
+) {
+    for (&interaction, mut background) in &mut buttons {
+        *background = match interaction {
+            Interaction::Pressed => Color::srgb(0.35, 0.75, 0.35).into(),
+            Interaction::Hovered => Color::srgb(0.25, 0.25, 0.25).into(),
+            Interaction::None => Color::srgb(0.15, 0.15, 0.15).into(),
         };
+    }
+}
+
+fn reload_bindings(
+    _on: Trigger<SettingsChanged>,
+    // settings: Res<Settings>,
+    mut commands: Commands,
+    mut player: Query<Entity, With<Player>>,
+) {
+    if let Ok(player) = player.single_mut() {
+        commands
+            .entity(player)
+            .despawn_related::<Actions<Player>>()
+            .insert(PlayerCtx);
     }
 }
 
@@ -352,15 +383,15 @@ fn update_button_text(
 )]
 struct SettingsButton;
 
-/// Stores information about button binding.
+/// Button associated with a binding.
 #[derive(Component)]
 #[require(SettingsButton)]
-struct InputButton {
-    /// Assigned input.
-    input: Option<Input>,
+struct BindingButton {
+    /// Assigned binding.
+    binding: Binding,
 }
 
-/// Stores assigned button with input.
+/// Button that clears the associated [`BindingButton`].
 #[derive(Component)]
 #[require(
     Button,
@@ -373,8 +404,8 @@ struct InputButton {
     },
 )]
 struct DeleteButton {
-    /// Entity with [`InputButton`].
-    button_entity: Entity,
+    /// Entity with [`BindingButton`].
+    binding_button: Entity,
 }
 
 #[derive(Component, Default)]
@@ -395,15 +426,15 @@ struct Dialog;
 #[derive(Component)]
 #[require(Dialog)]
 struct BindingDialog {
-    /// Entity with [`InputButton`].
-    button_entity: Entity,
+    /// Entity with [`BindingButton`] for which the dialog was triggered.
+    binding_button: Entity,
 }
 
 #[derive(Component)]
 #[require(Dialog)]
 struct ConflictDialog {
-    /// Entity with [`InputButton`].
-    button_entity: Entity,
-    /// Entity with [`InputButton`] that conflicts with [`Self::button_entity`].
-    conflict_entity: Entity,
+    /// Entity with [`BindingButton`].
+    binding_button: Entity,
+    /// Entity with [`BindingButton`] that conflicts with [`Self::binding_button`].
+    conflict_button: Entity,
 }

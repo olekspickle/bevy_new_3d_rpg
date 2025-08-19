@@ -24,15 +24,16 @@ pub fn plugin(app: &mut App) {
 /// <https://github.com/idanarye/bevy-tnua/blob/main/demos/src/character_control_systems/platformer_control_systems.rs>
 fn movement(
     cfg: Res<Config>,
-    actions: Single<&Actions<GameplayCtx>>,
+    navigate: Single<&Action<Navigate>>,
+    crouch: Single<&Action<Crouch>>,
     camera: Query<&Transform, With<SceneCamera>>,
     mut player_query: Query<(&mut Player, &mut TnuaController, &mut StepTimer)>,
 ) -> Result {
-    let actions = actions.into_inner();
+    let (navigate, crouch) = (*navigate.into_inner(), *crouch.into_inner());
+    info!("{}, {}", *navigate, *crouch);
     for (player, mut controller, mut step_timer) in player_query.iter_mut() {
         let cam_transform = camera.single()?;
-        let input_value = actions.value::<Navigate>()?.as_axis2d();
-        let direction = cam_transform.movement_direction(input_value);
+        let direction = cam_transform.movement_direction(*navigate);
 
         let float_height = 0.5;
         controller.basis(TnuaBuiltinWalk {
@@ -52,7 +53,7 @@ fn movement(
         });
 
         // Check if crouch is currently active and apply TnuaBuiltinCrouch as an action
-        if actions.value::<Crouch>()?.as_bool() {
+        if *crouch {
             controller.action(TnuaBuiltinCrouch {
                 float_offset: 0.0,
                 height_change_impulse_for_duration: 0.1,
@@ -85,7 +86,7 @@ fn movement(
 fn handle_sprint_in(
     on: Trigger<Started<Sprint>>,
     cfg: Res<Config>,
-    mut player_query: Query<&mut Player, With<GameplayCtx>>,
+    mut player_query: Query<&mut Player, With<PlayerCtx>>,
 ) -> Result {
     let entity = on.target();
     if let Ok(mut player) = player_query.get_mut(entity) {
@@ -101,7 +102,7 @@ fn handle_sprint_in(
 fn handle_sprint_out(
     on: Trigger<Completed<Navigate>>,
     cfg: Res<Config>,
-    mut player_query: Query<&mut Player, With<GameplayCtx>>,
+    mut player_query: Query<&mut Player, With<PlayerCtx>>,
 ) {
     let entity = on.target();
     match player_query.get_mut(entity) {
@@ -149,13 +150,13 @@ fn handle_jump(
 fn handle_dash(
     on: Trigger<Started<Dash>>,
     cfg: Res<Config>,
-    actions: Single<&Actions<GameplayCtx>>,
+    navigate: Single<&Action<Navigate>>,
     camera: Query<&Transform, With<SceneCamera>>,
     mut player_query: Query<(&mut TnuaController, &TnuaSimpleAirActionsCounter)>,
 ) -> Result {
     let (mut controller, air_counter) = player_query.get_mut(on.target())?;
     let cam_transform = camera.single()?;
-    let navigate = actions.value::<Navigate>()?.as_axis2d();
+    let navigate = **navigate.into_inner();
     let direction = cam_transform.movement_direction(navigate);
 
     controller.action(TnuaBuiltinDash {
@@ -178,7 +179,7 @@ fn handle_dash(
 pub fn crouch_in(
     on: Trigger<Started<Crouch>>,
     cfg: Res<Config>,
-    mut player: Query<&mut Player, With<GameplayCtx>>,
+    mut player: Query<&mut Player, With<PlayerCtx>>,
     mut tnua: Query<(&mut TnuaAvian3dSensorShape, &mut Collider), With<Player>>,
 ) -> Result {
     let (mut avian_sensor, mut collider) = tnua.single_mut()?;
@@ -195,7 +196,7 @@ pub fn crouch_in(
 pub fn crouch_out(
     on: Trigger<Completed<Crouch>>,
     cfg: Res<Config>,
-    mut player: Query<&mut Player, With<GameplayCtx>>,
+    mut player: Query<&mut Player, With<PlayerCtx>>,
     mut tnua: Query<
         (&mut TnuaAvian3dSensorShape, &mut Collider),
         (With<Player>, Without<SceneCamera>),

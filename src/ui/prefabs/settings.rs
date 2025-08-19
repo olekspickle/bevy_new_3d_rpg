@@ -74,7 +74,7 @@ fn update_tab_content(
                         }
                         UiTab::Keybindings => {
                             commands
-                                .spawn(keybind_editor(&settings.keybind))
+                                .spawn(keybind_editor(&settings.input_map))
                                 .insert(ChildOf(e));
                         }
                     }
@@ -349,7 +349,7 @@ pub fn settings_ui() -> impl Bundle {
             children![
                 tab_bar(),
                 (TabContent, Node::default(), children![audio_grid()]),
-                navigation()
+                bottom_row()
             ]
         )],
     )
@@ -395,7 +395,7 @@ fn tab_bar() -> impl Bundle {
     )
 }
 
-fn navigation() -> impl Bundle {
+fn bottom_row() -> impl Bundle {
     (
         Node {
             position_type: PositionType::Absolute,
