@@ -22,6 +22,25 @@ fn spawn_ctx(mut commands: Commands) {
     commands.spawn((MainMenuCtx, ModalInput));
 }
 
+#[derive(InputAction)]
+#[action_output(Vec2)]
+pub struct NavigateModal;
+
+/// Controller element select. F.e. for inventory cell
+#[derive(Debug, InputAction)]
+#[action_output(bool)]
+pub struct Select;
+
+/// Controller tab switch right
+#[derive(Debug, InputAction)]
+#[action_output(bool)]
+pub struct CycleTab;
+
+/// Controller tab switch left
+#[derive(Debug, InputAction)]
+#[action_output(bool)]
+pub struct CycleTabBack;
+
 #[derive(Component, Default)]
 #[component(on_add = ModalInput::on_add)]
 pub(crate) struct ModalInput;

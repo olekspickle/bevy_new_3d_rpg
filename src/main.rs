@@ -1,14 +1,11 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use avian3d::prelude::*;
 use bevy::log::tracing_subscriber::{field::MakeExt, fmt};
 use bevy::{
     app::App, asset::AssetMetaCheck, asset::load_internal_binary_asset, ecs::error::error, log,
     prelude::*, window::PrimaryWindow, winit::WINIT_WINDOWS,
 };
-use bevy_enhanced_input::EnhancedInputPlugin;
-use bevy_skein::SkeinPlugin;
 use winit::window::Icon;
 
 use std::io::Cursor;
@@ -17,21 +14,12 @@ pub mod asset_loading;
 pub mod audio;
 pub mod camera;
 pub mod game;
-pub mod models;
 pub mod player;
 pub mod scene;
 pub mod screens;
+pub mod shared;
 pub mod third_party;
 pub mod ui;
-
-use asset_loading::{AudioSources, Models, ResourceHandles, Textures};
-use audio::*;
-use game::*;
-use models::*;
-use scene::*;
-use screens::*;
-use third_party::*;
-use ui::*;
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 
@@ -44,7 +32,7 @@ fn main() {
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Bevy 3D Game".to_string(),
+                    title: NAME.to_string(),
                     fit_canvas_to_parent: true,
                     prevent_default_event_handling: false,
                     ..default()
@@ -87,7 +75,7 @@ fn main() {
         asset_loading::plugin,
         camera::plugin,
         ui::plugin,
-        models::plugin,
+        shared::plugin,
         scene::plugin,
         player::plugin,
         screens::plugin,

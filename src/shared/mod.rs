@@ -1,22 +1,18 @@
-use crate::*;
-use bevy_enhanced_input::prelude::*;
-use serde::Serialize;
+//! Types shared across the domain-level plugins (player, camera, scene, screens, game, ui).
+//! A primitive belongs here only if several plugins depend on it — otherwise it
+//! lives in the plugin that owns it.
+use crate::screens::Screen;
+use bevy::prelude::*;
 
 mod config;
-mod events;
 mod ext_traits;
-mod input;
 mod keybinding;
-mod primitives;
 mod settings;
 mod states;
 
 pub use config::*;
-pub use events::*;
 pub use ext_traits::*;
-pub use input::*;
 pub use keybinding::*;
-pub use primitives::*;
 pub use settings::*;
 pub use states::*;
 
@@ -34,7 +30,31 @@ pub fn plugin(app: &mut App) {
             .chain(),
     );
 
-    app.add_plugins((settings::plugin, states::plugin, events::plugin));
+    app.add_plugins((settings::plugin, states::plugin));
+}
+
+/// Macro to hide the derive trait boilerplate for marker components
+#[macro_export]
+macro_rules! markers {
+  ( $( $name:ident ),* ) => {
+        $(
+            #[derive(Component, Reflect, Clone, Default)]
+            #[reflect(Component)]
+            pub struct $name;
+        )*
+    };
+}
+
+/// Same as [`markers!`] but for timer newtype components
+#[macro_export]
+macro_rules! timers {
+  ( $( $name:ident ),* ) => {
+        $(
+            #[derive(Component, Reflect, Deref, DerefMut, Debug)]
+            #[reflect(Component)]
+            pub struct $name(pub Timer);
+        )*
+    };
 }
 
 /// High-level groupings of systems for the app in the [`Update`] schedule.

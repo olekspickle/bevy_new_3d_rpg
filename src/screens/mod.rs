@@ -1,7 +1,16 @@
 //! The game's main screen states and transitions between them.
-use crate::*;
+use crate::asset_loading::{AudioSources, ResourceHandles, Textures};
+use crate::game::{ToggleMute, TogglePause};
+use crate::markers;
+use crate::shared::{AppSystems, GameState, Settings};
+use crate::ui::{
+    self, MainMenuCtx, Modal, ModalInput, Modals, NewModal, PopModal, Props, colors, settings_ui,
+    widget,
+};
+use bevy::prelude::*;
 use bevy::ui::Val::*;
-use bevy_enhanced_input::prelude::Start;
+use bevy_enhanced_input::prelude::{InputAction, Start};
+use bevy_seedling::prelude::*;
 
 mod credits;
 mod gameplay;
@@ -53,6 +62,11 @@ impl Screen {
         matches!(self, Self::Gameplay)
     }
 }
+
+/// Back/escape navigation, bound in both player and modal input contexts.
+#[derive(InputAction)]
+#[action_output(bool)]
+pub struct Escape;
 
 fn unpause_on_enter(mut state: ResMut<GameState>, mut time: ResMut<Time<Virtual>>) {
     if time.is_paused() || state.paused {

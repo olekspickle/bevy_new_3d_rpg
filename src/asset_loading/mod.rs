@@ -1,10 +1,11 @@
-use crate::*;
+use crate::shared::Config;
 use bevy::asset::Asset;
+use bevy::prelude::*;
 use bevy_seedling::sample::AudioSample;
 use bevy_shuffle_bag::ShuffleBag;
 use bevy_sprinkles::prelude::ParticleSystemAsset;
 
-mod ron;
+pub mod ron;
 mod tracking;
 pub(crate) use tracking::*;
 
@@ -12,9 +13,7 @@ pub fn plugin(app: &mut App) {
     // start asset loading
     app.add_plugins(tracking::plugin)
         .add_plugins(ron::RonLoadPlugin::<Config>::default())
-        .add_plugins(ron::RonLoadPlugin::<CreditsPreset>::default())
         .load_resource_from_path::<Config>("config.ron")
-        .load_resource_from_path::<CreditsPreset>("credits.ron")
         .load_resource::<AudioSources>()
         .load_resource::<Particles>()
         .load_resource::<Textures>()

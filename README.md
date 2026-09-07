@@ -28,7 +28,7 @@ You can of course leave it all and delete all features if you want camera setup 
 
 ### Hotpatching
 To set this up, follow the instructions in the [release announcement](https://bevy.org/news/bevy-0-17/#hot-patching-systems-in-a-running-app)
-- Linux: `makers hot` or `cargo make hot` or `bash BEVY_ASSET_ROOT="." dx serve --hot-patch`
+- Linux: `just hot` or `bash BEVY_ASSET_ROOT="." dx serve --hot-patch`
 - Windows PS:`$env:BEVY_ASSET_ROOT="." ; dx serve --hot-patch`
 
 ## Features:
@@ -76,7 +76,7 @@ https://github.com/bevyengine/bevy/blob/release-0.18.0/examples/shader_advanced/
 
 ## Run your game
 
-There are some helpful commands in [Makefile](./Makefile) to simplify build options
+There are some helpful commands in [justfile](./justfile) to simplify build options
 But generally running your game locally is very simple:
 
 <details>
@@ -90,13 +90,13 @@ To run a **web** dev build to run audio in separate thread to avoid audio stutte
 </details>
 
 <details>
-    <summary><ins>with cargo-make</ins></summary>
+    <summary><ins>with just</ins></summary>
 
-- Install [cargo-make]: `cargo install cargo-make`
+- Install [just]: `cargo install just`
 
-- Dev: `makers run` or `cargo make run` to run a **native** dev build
-- Release: `makers build` or `cargo make build` to build a **native** release build
-- Web: `makers run-web` or `cargo make run-web` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
+- Dev: `just` (runs default build) or `just build` to build
+- Lint: `just lint` to run clippy, fmt check, doc check, and web check
+- Web: `just web-dev` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
 </details>
 
 <details>
@@ -154,7 +154,7 @@ See the [credits](assets/credits.json) for more information.
 [BevyFlock]: https://github.com/TheBevyFlock/bevy_new_2d
 [bevy_enhanced_input]: https://github.com/projectharmonia/bevy_enhanced_input
 [cargo-generate]: https://github.com/cargo-generate/cargo-generate
-[cargo-make]: https://github.com/sagiegurari/cargo-make
+[just]: https://github.com/casey/just
 [GitHub workflows]: https://docs.github.com/en/actions/using-workflows
 [Linux dependencies]: https://github.com/bevyengine/bevy/blob/main/docs/linux_dependencies.md
 [skein]: https://bevyskein.dev

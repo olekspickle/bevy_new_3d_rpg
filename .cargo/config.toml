@@ -29,7 +29,7 @@ rustflags = [
 # BUILD
 [unstable]
 build-std = ["std", "core", "alloc", "panic_abort"]
-codegen-backend = true
+# codegen-backend = true
 
 [profile]
 incremental = true
@@ -43,13 +43,14 @@ features = ["dev"]
 
 [profile.dev]
 opt-level = 1                   # Less optimization in the dev profile.
-codegen-backend = "cranelift"   # CRANELIFT speedup: https://bevy.org/learn/quick-start/getting-started/setup/#cranelift
+# codegen-backend = "cranelift"   # CRANELIFT speedup: https://bevy.org/learn/quick-start/getting-started/setup/#cranelift
 [profile.dev.package."*"]
 opt-level = 3
 # Consider compiling deps with llvm for runtime perf and working `#[should_panic]`
 # If you don't have any tests that `#[should_panic]`, comment this out for *massive* speedups
 # For me, it makes a 16 minute build take 6 minutes.
-codegen-backend = "llvm"
+# codegen-backend = "llvm"
+
 [profile.dev.package.wgpu-types]    # Remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
 debug-assertions = false
 

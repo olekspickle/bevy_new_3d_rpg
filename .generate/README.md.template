@@ -24,8 +24,8 @@ Feel free to move things around however you want, though
 
 ## Run your game
 
-### Makefile
-There are some helpful commands in [Makefile](./Makefile) to simplify build options
+### Justfile
+There are some helpful commands in [justfile](./justfile) to simplify build options
 But generally running your game locally is very simple:
 
 <details>
@@ -39,11 +39,11 @@ To run a **web** dev build to run audio in separate thread to avoid audio stutte
 </details>
 
 <details>
-    <summary><ins>with cmake</ins></summary>
+    <summary><ins>with just</ins></summary>
 
-- Dev: `make run` to run a **native** dev build
-- Release: `make build` to build a **native** release build
-- Web: `make run-web` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
+- Dev: `just` (runs default build) or `just build` to build
+- Lint: `just lint` to run clippy, fmt check, doc check, and web check
+- Web: `just web-dev` to run a **web** dev build to run audio in separate thread to avoid audio stuttering
 </details>
 
 <details>
@@ -94,6 +94,7 @@ The source code in this repository is licensed under any of the following at you
 [BevyFlock]: https://github.com/TheBevyFlock/bevy_new_2d
 [bevy_enhanced_input]: https://github.com/projectharmonia/bevy_enhanced_input
 [cargo-generate]: https://github.com/cargo-generate/cargo-generate
+[just]: https://github.com/casey/just
 [GitHub workflows]: https://docs.github.com/en/actions/using-workflows
 [Linux dependencies]: https://github.com/bevyengine/bevy/blob/main/docs/linux_dependencies.md
 [skein]: https://bevyskein.dev

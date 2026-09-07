@@ -1,5 +1,5 @@
 use super::*;
-use models::*;
+use crate::shared::*;
 
 // use serde::{Deserialize, Serialize};
 // use bevy_enhanced_input::prelude::*;

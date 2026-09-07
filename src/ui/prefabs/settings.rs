@@ -5,6 +5,7 @@ use bevy::window::{PresentMode, PrimaryWindow};
 use bevy_enhanced_input::prelude::Start;
 
 pub(super) fn plugin(app: &mut App) {
+    app.init_resource::<ActiveTab>();
     app.add_systems(
         Update,
         (
@@ -18,6 +19,18 @@ pub(super) fn plugin(app: &mut App) {
     .add_observer(to_the_left_tab)
     .add_observer(to_the_right_tab);
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect, Component)]
+#[reflect(Component)]
+pub enum UiTab {
+    #[default]
+    Audio,
+    Video,
+    Keybindings,
+}
+
+#[derive(Resource, Default)]
+pub struct ActiveTab(pub UiTab);
 
 markers!(
     GeneralVolumeLabel,

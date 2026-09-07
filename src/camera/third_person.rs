@@ -1,4 +1,5 @@
 use super::*;
+use avian3d::prelude::RigidBody;
 use bevy_third_person_camera::{ThirdPersonCamera, Zoom};
 
 pub fn plugin(app: &mut App) {

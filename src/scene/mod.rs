@@ -15,7 +15,14 @@
 //! ```
 //! more on that here: <https://bevyskein.dev/docs/migration-tools>
 //! Scene logic is only active during the State `Screen::Playing`
-use crate::{asset_loading::Particles, *};
+use crate::asset_loading::{Models, Particles};
+use crate::camera::SceneCamera;
+use crate::game::Mood;
+use crate::markers;
+use crate::screens::Screen;
+use crate::shared::{Config, Settings};
+use crate::ui::colors;
+use bevy::prelude::*;
 use bevy::scene::SceneInstanceReady;
 use bevy_sprinkles::prelude::*;
 

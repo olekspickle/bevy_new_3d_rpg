@@ -1,8 +1,12 @@
-use crate::*;
+use avian3d::prelude::PhysicsPlugins;
+use bevy::prelude::*;
 use bevy_ahoy::prelude::*;
 // use bevy_fix_cursor_unlock_web::prelude::*;
+use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_prng::WyRand;
 use bevy_rand::prelude::EntropyPlugin;
+use bevy_seedling::SeedlingPlugin;
+use bevy_skein::SkeinPlugin;
 use bevy_sprinkles::SprinklesPlugin;
 #[cfg(feature = "third_person")]
 pub use bevy_third_person_camera::{

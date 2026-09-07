@@ -8,10 +8,17 @@ pub fn plugin(app: &mut App) {
             .run_if(in_state(Screen::Gameplay))
             .in_set(AppSystems::UserInput),
     )
+    .add_systems(
+        Update,
+        tick_jump_timer
+            .run_if(in_state(Screen::Gameplay))
+            .in_set(AppSystems::TickTimers),
+    )
     .add_observer(handle_sprint_in)
     .add_observer(handle_sprint_out)
     .add_observer(handle_dash)
-    // .add_observer(handle_jump)
+    .add_observer(handle_jump)
+    .add_observer(handle_land)
     //  .add_observer(handle_attack)
     .add_observer(crouch_in)
     .add_observer(crouch_out);
@@ -115,15 +122,28 @@ pub fn crouch_out(_: On<Complete<Crouch>>, mut player: Query<&mut Collider>) -> 
 //     // TODO: Hit
 // }
 
-// fn handle_jump(
-//     on: On<Fire<Jump>>,
-//     mut player_q: Query<(&mut Player, &CharacterController), With<Player>>,
-// ) -> Result {
-//     let (mut player, _ahoy) = player_q.get_mut(on.event_target())?;
-//     // player.animation.start_jump();
-//
-//     Ok(())
-// }
+/// Start the [`JumpTimer`], it runs until [`PlayerLanded`].
+fn handle_jump(on: On<Start<Jump>>, mut player_q: Query<&mut JumpTimer, With<Player>>) -> Result {
+    let mut timer = player_q.get_mut(on.context)?;
+    timer.reset();
+    timer.unpause();
+
+    Ok(())
+}
+
+fn handle_land(on: On<PlayerLanded>, mut player_q: Query<&mut JumpTimer, With<Player>>) -> Result {
+    let mut timer = player_q.get_mut(on.event_target())?;
+    timer.reset();
+    timer.pause();
+
+    Ok(())
+}
+
+fn tick_jump_timer(time: Res<Time>, mut timers: Query<&mut JumpTimer, With<Player>>) {
+    for mut timer in timers.iter_mut() {
+        timer.tick(time.delta());
+    }
+}
 
 #[derive(Component)]
 pub struct Dashing {

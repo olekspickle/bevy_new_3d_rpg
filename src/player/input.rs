@@ -6,6 +6,18 @@ pub fn plugin(app: &mut App) {
         .add_observer(on_modal_add);
 }
 
+#[derive(InputAction)]
+#[action_output(bool)]
+pub struct ZoomView;
+
+#[derive(InputAction)]
+#[action_output(bool)]
+pub struct Sprint;
+
+#[derive(InputAction)]
+#[action_output(bool)]
+pub struct Dash;
+
 #[derive(Component, Default)]
 #[component(on_add = PlayerInput::on_add)]
 pub(crate) struct PlayerInput;

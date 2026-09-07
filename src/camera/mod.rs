@@ -1,4 +1,9 @@
-use crate::*;
+use crate::markers;
+use crate::screens::Screen;
+use crate::shared::Config;
+#[cfg(feature = "third_person")]
+use crate::third_party::ThirdPersonCamera;
+use bevy::prelude::*;
 #[cfg(not(feature = "third_person"))]
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 #[cfg(feature = "native")]
@@ -26,6 +31,11 @@ pub fn plugin(app: &mut App) {
     #[cfg(feature = "top_down")]
     app.add_plugins(top_down::plugin);
 }
+
+markers!(SceneCamera);
+
+#[derive(EntityEvent)]
+pub struct ToggleCamCursor(pub Entity);
 
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((

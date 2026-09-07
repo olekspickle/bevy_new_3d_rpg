@@ -1,4 +1,5 @@
 use super::*;
+use avian3d::prelude::{Collider, RigidBody};
 use bevy::gltf::GltfMesh;
 use easy_ext::ext;
 

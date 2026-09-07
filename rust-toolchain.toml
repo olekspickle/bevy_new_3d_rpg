@@ -6,4 +6,4 @@ targets = [
     "wasm32-unknown-unknown",
     "x86_64-pc-windows-gnu"
 ]
-components = ["rustc", "cargo", "clippy", "rustc-codegen-cranelift-preview"]
+components = ["rustc", "cargo", "clippy"]

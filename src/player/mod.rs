@@ -1,7 +1,19 @@
-use crate::*;
+use crate::asset_loading::{AudioSources, Models};
+use crate::camera::SceneCamera;
+use crate::screens::{Escape, Screen};
+use crate::shared::{AppSystems, Config, EntityExt, GameState, Settings, TransformExt};
+#[cfg(feature = "third_person")]
+use crate::third_party::ThirdPersonCameraTarget;
+#[cfg(feature = "top_down")]
+use crate::third_party::TopDownCameraTarget;
+use crate::timers;
+use crate::ui::modal::{Modal, ModalInput};
+use avian3d::prelude::*;
 use bevy::platform::time::Instant;
+use bevy::prelude::*;
 use bevy_ahoy::{CharacterLook, prelude::*};
 use bevy_enhanced_input::prelude::*;
+use bevy_seedling::prelude::*;
 
 mod animation;
 mod control;
@@ -12,6 +24,12 @@ mod sound;
 pub use animation::*;
 pub use control::*;
 pub use input::*;
+
+/// Fired on the player entity when it hits the ground after a jump/fall.
+#[derive(EntityEvent)]
+pub struct PlayerLanded(pub Entity);
+
+timers!(JumpTimer, StepTimer);
 
 /// This plugin handles player related stuff like movement, shooting
 /// Player logic is only active during the State `Screen::Playing`
@@ -65,6 +83,12 @@ pub fn spawn_player(
             collider,
             // other player related components
             StepTimer(Timer::from_seconds(cfg.timers.step, TimerMode::Repeating)),
+            {
+                // started by jump input, stopped on PlayerLanded
+                let mut timer = Timer::from_seconds(cfg.timers.jump, TimerMode::Once);
+                timer.pause();
+                JumpTimer(timer)
+            },
         ))
         // spawn character mesh as child to adjust mesh position relative to the player origin
         .with_children(|parent| {

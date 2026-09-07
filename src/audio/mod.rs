@@ -58,7 +58,9 @@
 //! }
 //! ```
 //!
-use crate::*;
+use crate::markers;
+use crate::shared::Settings;
+use bevy::prelude::*;
 pub use bevy_seedling::prelude::*;
 
 mod fade;

@@ -46,7 +46,7 @@ pub fn menu_modal() -> impl Bundle {
                     },
                     children![widget::btn_small(
                         Props::new("back").width(Vw(5.0)).border(UiRect::DEFAULT),
-                        ui::click_pop_modal
+                        crate::ui::click_pop_modal
                     )]
                 ),
                 (

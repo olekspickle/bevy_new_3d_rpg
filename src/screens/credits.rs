@@ -1,22 +1,63 @@
 //! A credits screen that can be accessed from the main menu
 use super::*;
-use bevy::ecs::spawn::SpawnIter;
+use crate::asset_loading::{LoadResource, ron::RonLoadPlugin};
+use bevy::ecs::{lifecycle::HookContext, spawn::SpawnIter, world::DeferredWorld};
+use bevy_enhanced_input::prelude::*;
+use serde::{Deserialize, Serialize};
 
-const SCROLL_SPEED: f32 = 5.0; // 10px/s
+/// Percent of screen height per second
+const SCROLL_SPEED: f32 = 5.0;
+/// Roll speed multiplier while holding "speed up"
+const SPEED_UP_FACTOR: f32 = 4.0;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        OnEnter(Screen::Credits),
-        (start_credits_music, spawn_credits_screen),
-    )
-    .add_systems(Update, roll_the_credits.run_if(in_state(Screen::Credits)));
+    app.add_plugins(RonLoadPlugin::<CreditsPreset>::default())
+        .load_resource_from_path::<CreditsPreset>("credits.ron")
+        .add_input_context::<CreditsInput>()
+        .add_systems(
+            OnEnter(Screen::Credits),
+            (start_credits_music, spawn_credits_screen),
+        )
+        .add_systems(Update, roll_the_credits.run_if(in_state(Screen::Credits)));
 }
 
-markers!(CreditsRoot);
+markers!(CreditsRoot, CreditsBackBtn);
+
+/// Up/Down (or dpad) axis: hold up to speed the roll up, hold down to stop it.
+#[derive(InputAction)]
+#[action_output(f32)]
+pub struct AdjustRoll;
+
+#[derive(Component, Default)]
+#[component(on_add = CreditsInput::on_add)]
+pub(crate) struct CreditsInput;
+
+impl CreditsInput {
+    fn on_add(mut world: DeferredWorld, ctx: HookContext) {
+        world
+            .commands()
+            .entity(ctx.entity)
+            .insert(actions!(CreditsInput[(
+                Action::<AdjustRoll>::new(),
+                Bindings::spawn((
+                    Bidirectional::new(KeyCode::ArrowUp, KeyCode::ArrowDown),
+                    Bidirectional::new(GamepadButton::DPadUp, GamepadButton::DPadDown),
+                )),
+            )]));
+    }
+}
+
+#[derive(Asset, Clone, Debug, Default, Serialize, Deserialize, Reflect, Resource)]
+#[reflect(Resource)]
+pub struct CreditsPreset {
+    pub assets: Vec<(String, String)>,
+    pub devs: Vec<(String, String)>,
+}
 
 fn spawn_credits_screen(mut commands: Commands, credits: Res<CreditsPreset>) {
     commands.spawn((
         DespawnOnExit(Screen::Credits),
+        CreditsInput,
         widget::ui_root("credits screen"),
         BackgroundColor(colors::TRANSLUCENT),
         children![(
@@ -37,7 +78,11 @@ fn spawn_credits_screen(mut commands: Commands, credits: Res<CreditsPreset>) {
                 flatten(&credits.devs),
                 widget::header("Assets"),
                 flatten(&credits.assets),
-                (widget::btn_big("Back", click_go_to), Screen::Title),
+                (
+                    widget::btn_big("Back", click_go_to),
+                    Screen::Title,
+                    CreditsBackBtn
+                ),
             ]
         )],
     ));
@@ -97,10 +142,31 @@ fn start_credits_music(
     ));
 }
 
-fn roll_the_credits(time: Res<Time>, mut node: Single<&mut Node, With<CreditsRoot>>) {
-    if let Percent(bottom) = node.bottom
-        && bottom < 0.0
-    {
-        node.bottom = Percent(bottom + SCROLL_SPEED * time.delta_secs());
+/// Roll the credits up from below the screen until the back button
+/// reaches the center of the screen.
+/// Both [`UiGlobalTransform`] (node center) and [`ComputedNode`] are in
+/// physical pixels with y going down from the top of the viewport.
+fn roll_the_credits(
+    time: Res<Time>,
+    adjust: Single<&Action<AdjustRoll>>,
+    root: Single<&ComputedNode, With<CreditsInput>>,
+    btn: Single<&UiGlobalTransform, With<CreditsBackBtn>>,
+    mut node: Single<&mut Node, With<CreditsRoot>>,
+) {
+    // skip until the first layout pass produces real geometry
+    let screen_center = root.size().y * 0.5;
+    if screen_center <= 0.0 || btn.translation.y <= screen_center {
+        return;
+    }
+
+    let adjust = ***adjust;
+    let speed = if adjust < 0.0 {
+        0.0 // hold down to stop
+    } else {
+        SCROLL_SPEED * (1.0 + adjust * (SPEED_UP_FACTOR - 1.0))
+    };
+
+    if let Percent(bottom) = node.bottom {
+        node.bottom = Percent(bottom + speed * time.delta_secs());
     }
 }

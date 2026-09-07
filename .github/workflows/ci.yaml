@@ -142,14 +142,11 @@ jobs:
   #     - name: Checkout repository
   #       uses: actions/checkout@v4
   #
-  #     - name: Set up environment
-  #       run: echo "RUSTFLAGS=${RUSTFLAGS:+$RUSTFLAGS }-Zcodegen-backend=cranelift" >> "${GITHUB_ENV}"
-  #
   #     - name: Install Rust toolchain
   #       uses: dtolnay/rust-toolchain@master
   #       with:
   #         toolchain: ${{ env.toolchain }}
-  #         components: rust-src,rustc-codegen-cranelift-preview
+  #         components: rust-src
   #
   #     - name: Restore Rust cache
   #       uses: Swatinem/rust-cache@v2

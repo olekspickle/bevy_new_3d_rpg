@@ -1,12 +1,13 @@
 use super::*;
 use crate::scene::SunCycle;
-use serde::Deserialize;
+use bevy_seedling::prelude::Volume;
+use serde::{Deserialize, Serialize};
 use std::{error::Error, fs};
 
 pub const SETTINGS_PATH: &str = "assets/settings.ron";
 
 pub fn plugin(app: &mut App) {
-    app.init_resource::<Settings>().init_resource::<ActiveTab>();
+    app.init_resource::<Settings>();
     app.add_systems(
         OnEnter(Screen::Title),
         load_settings.run_if(resource_exists::<Config>.and(run_once)),
@@ -76,14 +77,6 @@ fn load_settings(mut commands: Commands) {
     commands.insert_resource(settings);
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Reflect, Component)]
-#[reflect(Component)]
-pub enum UiTab {
-    #[default]
-    Audio,
-    Video,
-    Keybindings,
-}
-
-#[derive(Resource, Default)]
-pub struct ActiveTab(pub UiTab);
+/// Fired when [`Settings`] change so settings UI can refresh its content.
+#[derive(Event)]
+pub struct SettingsChanged;
