@@ -33,10 +33,20 @@ impl Commands<'_, '_> {
         gltf: &Gltf,
         meshes: &ResMut<Assets<Mesh>>,
         gltf_meshes: &Res<Assets<GltfMesh>>,
+        asset_server: &AssetServer,
         bundle: impl Bundle + Clone,
     ) {
         let mesh = gltf.meshes[0].clone();
-        let material = gltf.materials[0].clone();
+        let gltf_material = gltf.materials[0].clone();
+        // glTF materials load as engine-agnostic `GltfMaterial` data; the renderable
+        // `StandardMaterial` is a sibling asset under the same label with `/std` appended.
+        let material: Handle<StandardMaterial> = match gltf_material.path() {
+            Some(path) => {
+                let label = format!("{}/std", path.label().unwrap_or_default());
+                asset_server.load(path.clone().with_label(label))
+            }
+            None => Default::default(),
+        };
         if let Some(mesh) = gltf_meshes.get(&mesh) {
             for primitive in &mesh.primitives {
                 let mesh = primitive.mesh.clone();

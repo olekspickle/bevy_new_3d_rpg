@@ -1,5 +1,6 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![recursion_limit = "256"]
 
 use bevy::log::tracing_subscriber::{field::MakeExt, fmt};
 use bevy::{
@@ -86,9 +87,9 @@ fn main() {
     // override default font
     load_internal_binary_asset!(
         app,
-        TextFont::default().font,
+        Handle::<Font>::default(),
         "../assets/fonts/Not-Jam-Mono-Clean-16.ttf",
-        |bytes: &[u8], _path: String| { Font::try_from_bytes(bytes.to_vec()).unwrap() }
+        |bytes: &[u8], _path: String| { Font::from_bytes(bytes.to_vec()) }
     );
 
     app.run();

@@ -1,11 +1,12 @@
 use super::*;
 use crate::asset_loading::Particles;
-use bevy_sprinkles::prelude::ParticleSystem3D;
+use bevy_sprinkles::prelude::Particles3d;
 
-pub fn plugin(app: &mut App) {
+pub fn plugin(_app: &mut App) {
     // app.add_observer(land_particles);
 }
 
+#[allow(dead_code)]
 fn land_particles(
     on: On<PlayerLanded>,
     particles: Res<Particles>,
@@ -31,19 +32,14 @@ fn land_particles(
         return;
     };
 
-    let movement: Vec2 = (*(*movement)).into();
+    let movement: Vec2 = *(*movement);
     let input_dir = camera.movement_direction(movement);
 
-    let mut pos = transform.clone();
+    let mut pos = *transform;
     pos.translation.y -= 0.5;
     pos.scale = Vec3::new(50.0, 300.0, 50.0);
     pos.rotation =
         Quat::from_rotation_y(input_dir.x.atan2(input_dir.z) + std::f32::consts::FRAC_PI_2);
 
-    commands.spawn((
-        pos,
-        ParticleSystem3D {
-            handle: particles.wind_spin.clone(),
-        },
-    ));
+    commands.spawn((pos, Particles3d(particles.wind_spin.clone())));
 }

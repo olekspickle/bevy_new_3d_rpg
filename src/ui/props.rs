@@ -41,7 +41,7 @@ impl Props {
     }
     pub fn font_size(mut self, s: f32) -> Self {
         if let WidgetContent::Text(ref mut t) = self.content {
-            t.font.font_size = s;
+            t.font.font_size = FontSize::Px(s);
         }
         self
     }
@@ -163,7 +163,7 @@ impl Default for TextContent {
         Self {
             text: "".into(),
             color: colors::WHITEISH.into(),
-            layout: TextLayout::new_with_justify(Justify::Center),
+            layout: TextLayout::justify(Justify::Center),
             font: TextFont::from_font_size(size::FONT_SIZE),
             border: BorderColor {
                 bottom: colors::WHITEISH,

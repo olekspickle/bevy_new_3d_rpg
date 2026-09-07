@@ -1,9 +1,10 @@
 use super::*;
 use bevy::{
-    pbr::{ExtendedMaterial, MaterialExtension, OpaqueRendererMethod, StandardMaterial},
+    material::OpaqueRendererMethod,
+    pbr::{ExtendedMaterial, MaterialExtension, StandardMaterial},
     render::render_resource::*,
-    scene::SceneInstanceReady,
     shader::ShaderRef,
+    world_serialization::WorldInstanceReady,
 };
 
 pub fn plugin(app: &mut App) {
@@ -42,7 +43,7 @@ fn update_cosmic_sphere_time(time: Res<Time>, mut materials: ResMut<Assets<Cosmi
 }
 
 pub fn setup_cosmic_sphere(
-    _: On<SceneInstanceReady>,
+    _: On<WorldInstanceReady>,
     cosmic_spheres: Query<Entity, With<CosmicSphere>>,
     mut commands: Commands,
     mut materials: ResMut<Assets<CosmicSphereMaterial>>,
@@ -63,6 +64,11 @@ pub fn setup_cosmic_sphere(
     for entity in cosmic_spheres.iter() {
         commands
             .entity(entity)
+            // glTF meshes come with an auto-inserted `MeshMaterial3d<StandardMaterial>`
+            // (bevy_gltf's "/std" material bridge). Since it's a distinct component type
+            // from `MeshMaterial3d<CosmicSphereMaterial>`, both would otherwise coexist
+            // and get drawn, with the plain StandardMaterial pass hiding our shader.
+            .remove::<MeshMaterial3d<StandardMaterial>>()
             .insert((CosmicSphere, MeshMaterial3d(material.clone())));
     }
 }

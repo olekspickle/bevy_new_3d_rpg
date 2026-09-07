@@ -76,7 +76,7 @@ fn stop_soundtrack(
     mut music: Query<&mut PlaybackSettings, With<MusicPool>>,
     mut music_pbs: ResMut<MusicPlaybacks>,
 ) {
-    for (_, e) in music_pbs.iter_mut() {
+    for e in music_pbs.values_mut() {
         let Ok(mut s) = music.get_mut(*e) else {
             continue;
         };

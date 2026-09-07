@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::scene::spawn_level;
-use bevy::scene::SceneInstance;
+use bevy::world_serialization::WorldInstance;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -26,17 +26,17 @@ fn spawn_level_loading_screen(mut commands: Commands) {
 
 fn advance_to_title(
     mut next_screen: ResMut<NextState<Screen>>,
-    scene_spawner: Res<SceneSpawner>,
-    scene_instances: Query<&SceneInstance>,
-    just_added_scenes: Query<(), (With<SceneRoot>, Without<SceneInstance>)>,
+    world_instance_spawner: Res<WorldInstanceSpawner>,
+    world_instances: Query<&WorldInstance>,
+    just_added_roots: Query<(), (With<WorldAssetRoot>, Without<WorldInstance>)>,
     just_added_meshes: Query<(), Added<Mesh3d>>,
 ) {
-    if !(just_added_meshes.is_empty() && just_added_scenes.is_empty()) {
+    if !(just_added_meshes.is_empty() && just_added_roots.is_empty()) {
         return;
     }
 
-    for scene_instance in scene_instances.iter() {
-        if !scene_spawner.instance_is_ready(**scene_instance) {
+    for world_instance in world_instances.iter() {
+        if !world_instance_spawner.instance_is_ready(**world_instance) {
             return;
         }
     }

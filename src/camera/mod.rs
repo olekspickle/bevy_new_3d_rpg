@@ -9,8 +9,10 @@ use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 #[cfg(feature = "native")]
 use bevy::{anti_alias::taa::TemporalAntiAliasing, pbr::ScreenSpaceAmbientOcclusion};
 use bevy::{
-    camera::Exposure, core_pipeline::tonemapping::Tonemapping, light::ShadowFilteringMethod,
-    post_process::bloom::Bloom, render::view::Hdr,
+    camera::{Exposure, Hdr},
+    core_pipeline::tonemapping::Tonemapping,
+    light::ShadowFilteringMethod,
+    post_process::bloom::Bloom,
 };
 
 // mod gamepad_cursor;

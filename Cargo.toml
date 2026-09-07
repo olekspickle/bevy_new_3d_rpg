@@ -20,7 +20,8 @@ features = [
     "serialize",
     # "hotpatching",
     "jpeg",
-    "bevy_feathers"
+    "bevy_feathers",
+    "bevy_material"
 ]
 
 [dependencies]
@@ -35,16 +36,16 @@ bevy_third_person_camera = { version = "0.4", optional = true }         # 3rd pe
 bevy_top_down_camera = { version = "0.4", optional = true }             # top down camera
 
 bevy_sprinkles = "0.3.0"                                                # 3d particles
-avian3d = { version = "0.7", default-features = false, features = ["parry-f32", "3d", "f32"] }
-bevy_ahoy =   { version = "0.1.0-rc.6", default-features = false }      # character controller
+avian3d = { version = "0.7", default-features = false, features = ["parry-f32", "3d", "f32", "collider-from-mesh"] }
+bevy_ahoy =   { version = "0.2", default-features = false }             # character controller
 bevy_enhanced_input = { version = "0.26", features = ["serialize"] }    # keyboard/gamepad input
 
-bevy_shuffle_bag = "0.5"                                                # deterministically random container
+bevy_shuffle_bag = "0.6"                                                # deterministically random container
 bevy_seedling = { version = "0.8", features = ["hrtf"] }                # audio plugin using firewheel
 firewheel = "0.12"
 
 # dialogue
-bevy_yarnspinner = "0.7"
+bevy_yarnspinner = "0.9"
 
 # to play with
 # bevy_open_vat
@@ -56,7 +57,7 @@ easy-ext = "1"
 fundsp = "0.20"
 image = "0.25.6"
 ron = "0.10"
-rand = "0.9"
+rand = "0.10"
 serde = "1"
 thiserror = "2"
 # keep the following in sync with Bevy's dependencies
@@ -116,7 +117,6 @@ collapsible_if = "allow"           # Queries may access many components, which w
 nonstandard_macro_braces = "warn"   # Make sure macros use their standard braces, such as `[]` for `bevy_ecs::children!`.
 
 [patch.crates-io]
-bevy_ahoy = { git = "https://github.com/janhohenheim/bevy_ahoy", branch = "bevy-0.19" }
 bevy_seedling = { git = "https://github.com/CorvusPrudens/bevy_seedling", branch = "master" }
 bevy_perf_ui = { git = "https://github.com/olekspickle/perf_ui" }
 bevy_third_person_camera = { git = "https://github.com/olekspickle/bevy_third_person_camera" }

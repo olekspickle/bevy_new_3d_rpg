@@ -59,7 +59,7 @@ pub fn spawn_player(
         return;
     };
 
-    let mesh = SceneRoot(gltf.scenes[0].clone());
+    let mesh = WorldAssetRoot(gltf.scenes[0].clone());
     let pos = Vec3::from(cfg.player.spawn_pos);
     let pos = Transform::from_translation(pos);
     let hitbox = Capsule3d::new(cfg.player.hitbox.radius, cfg.player.hitbox.height);

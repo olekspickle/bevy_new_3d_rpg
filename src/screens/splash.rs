@@ -37,7 +37,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         continue_to_loading_screen
-            .run_if(input_just_pressed(KeyCode::Escape).and(in_state(Screen::Splash))),
+            .run_if(input_just_pressed(KeyCode::Escape).and_then(in_state(Screen::Splash))),
     );
 }
 
@@ -51,16 +51,18 @@ fn spawn_splash_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
                     width: Percent(30.0),
                     ..default()
                 },
-                ImageNode::new(asset_server.load_with_settings(
-                    // This should be an embedded asset for instant loading, but that is
-                    // currently [broken on Windows Wasm builds](https://github.com/bevyengine/bevy/issues/14246).
-                    "textures/bevy.png",
-                    |settings: &mut ImageLoaderSettings| {
-                        // Make an exception for the splash image in case
-                        // `ImagePlugin::default_nearest()` is used for pixel art.
-                        settings.sampler = ImageSampler::linear();
-                    },
-                )),
+                ImageNode::new(
+                    asset_server
+                        .load_builder()
+                        .with_settings(|settings: &mut ImageLoaderSettings| {
+                            // Make an exception for the splash image in case
+                            // `ImagePlugin::default_nearest()` is used for pixel art.
+                            settings.sampler = ImageSampler::linear();
+                        })
+                        // This should be an embedded asset for instant loading, but that is
+                        // currently [broken on Windows Wasm builds](https://github.com/bevyengine/bevy/issues/14246).
+                        .load("textures/bevy.png"),
+                ),
                 ImageNodeFadeInOut {
                     total_duration: SPLASH_DURATION_SECS,
                     fade_duration: SPLASH_FADE_DURATION_SECS,

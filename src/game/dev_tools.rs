@@ -24,6 +24,6 @@ pub(super) fn plugin(app: &mut App) {
 fn tab_trigger_system(mut commands: Commands) {
     commands.trigger(ToggleDebugUi);
 }
-fn toggle_debug_ui(_: On<ToggleDebugUi>, mut options: ResMut<UiDebugOptions>) {
+fn toggle_debug_ui(_: On<ToggleDebugUi>, mut options: ResMut<GlobalUiDebugOptions>) {
     options.toggle();
 }

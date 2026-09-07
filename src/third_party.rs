@@ -5,7 +5,7 @@ use bevy_ahoy::prelude::*;
 use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_prng::WyRand;
 use bevy_rand::prelude::EntropyPlugin;
-use bevy_seedling::SeedlingPlugin;
+use bevy_seedling::SeedlingPlugins;
 use bevy_skein::SkeinPlugin;
 use bevy_sprinkles::SprinklesPlugin;
 #[cfg(feature = "third_person")]
@@ -20,10 +20,7 @@ pub fn plugin(app: &mut App) {
 
     app.add_plugins((
         // FixPointerUnlockPlugin,
-        #[cfg(feature = "native")]
-        SeedlingPlugin::default(),
-        #[cfg(feature = "web")]
-        SeedlingPlugin::new_web_audio(),
+        SeedlingPlugins,
         EnhancedInputPlugin,
         SkeinPlugin::default(),
         PhysicsPlugins::default(),

@@ -23,7 +23,7 @@ use crate::screens::Screen;
 use crate::shared::{Config, Settings};
 use crate::ui::colors;
 use bevy::prelude::*;
-use bevy::scene::SceneInstanceReady;
+use bevy::world_serialization::WorldInstanceReady;
 use bevy_sprinkles::prelude::*;
 
 mod cosmic_sphere;
@@ -43,7 +43,7 @@ pub fn spawn_level(models: Res<Models>, gltf_assets: Res<Assets<Gltf>>, mut comm
     };
     commands
         .spawn((
-            SceneRoot(scene.scenes[0].clone()),
+            WorldAssetRoot(scene.scenes[0].clone()),
             Transform::from_scale(Vec3::splat(1.0)),
         ))
         .observe(attach_particles)
@@ -58,7 +58,7 @@ pub fn spawn_level(models: Res<Models>, gltf_assets: Res<Assets<Gltf>>, mut comm
 }
 
 fn attach_particles(
-    _: On<SceneInstanceReady>,
+    _: On<WorldInstanceReady>,
     moods: Query<(Entity, &Mood)>,
     transforms: Query<&Transform>,
     particles: Res<Particles>,
@@ -74,7 +74,7 @@ fn attach_particles(
                 Mood::Combat => particles.sun_floor.clone(),
             };
             commands.entity(e).with_children(|parent| {
-                parent.spawn((pos, ParticleSystem3D { handle }));
+                parent.spawn((pos, Particles3d(handle)));
             });
         }
     }

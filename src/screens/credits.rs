@@ -34,16 +34,15 @@ pub(crate) struct CreditsInput;
 
 impl CreditsInput {
     fn on_add(mut world: DeferredWorld, ctx: HookContext) {
-        world
-            .commands()
-            .entity(ctx.entity)
-            .insert(actions!(CreditsInput[(
+        world.commands().entity(ctx.entity).insert(actions!(
+            CreditsInput[(
                 Action::<AdjustRoll>::new(),
                 Bindings::spawn((
                     Bidirectional::new(KeyCode::ArrowUp, KeyCode::ArrowDown),
                     Bidirectional::new(GamepadButton::DPadUp, GamepadButton::DPadDown),
                 )),
-            )]));
+            )]
+        ));
     }
 }
 

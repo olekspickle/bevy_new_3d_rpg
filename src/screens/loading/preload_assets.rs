@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
         (
             update_loading_assets_label,
             enter_compile_shader_screen
-                .run_if(all_assets_loaded.and(in_state(LoadingScreen::Assets))),
+                .run_if(all_assets_loaded.and_then(in_state(LoadingScreen::Assets))),
         ),
     );
 }

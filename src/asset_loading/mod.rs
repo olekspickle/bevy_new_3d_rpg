@@ -3,7 +3,7 @@ use bevy::asset::Asset;
 use bevy::prelude::*;
 use bevy_seedling::sample::AudioSample;
 use bevy_shuffle_bag::ShuffleBag;
-use bevy_sprinkles::prelude::ParticleSystemAsset;
+use bevy_sprinkles::prelude::ParticlesAsset;
 
 pub mod ron;
 mod tracking;
@@ -123,11 +123,11 @@ impl FromWorld for AudioSources {
 #[derive(Resource, Asset, Clone, TypePath)]
 pub struct Particles {
     #[dependency]
-    pub sun_floor: Handle<ParticleSystemAsset>,
+    pub sun_floor: Handle<ParticlesAsset>,
     #[dependency]
-    pub healing_zone: Handle<ParticleSystemAsset>,
+    pub healing_zone: Handle<ParticlesAsset>,
     #[dependency]
-    pub wind_spin: Handle<ParticleSystemAsset>,
+    pub wind_spin: Handle<ParticlesAsset>,
 }
 
 impl FromWorld for Particles {

@@ -6,7 +6,7 @@
 //! Create a new animation graph for each player, start all animations with 0 weight and add weight
 //! exponentially between frames based on input
 use super::*;
-use bevy::scene::SceneInstanceReady;
+use bevy::world_serialization::WorldInstanceReady;
 use std::time::Duration;
 
 /// Animation control knobs
@@ -29,7 +29,7 @@ pub fn plugin(app: &mut App) {
 
 /// Build animation graph when scene loads
 pub fn prepare_animations(
-    on: On<SceneInstanceReady>,
+    on: On<WorldInstanceReady>,
     models: Res<Models>,
     gltfs: Res<Assets<Gltf>>,
     children_q: Query<&Children>,

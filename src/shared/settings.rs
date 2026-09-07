@@ -10,7 +10,7 @@ pub fn plugin(app: &mut App) {
     app.init_resource::<Settings>();
     app.add_systems(
         OnEnter(Screen::Title),
-        load_settings.run_if(resource_exists::<Config>.and(run_once)),
+        load_settings.run_if(resource_exists::<Config>.and_then(run_once)),
     );
 }
 

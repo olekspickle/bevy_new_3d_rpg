@@ -1,9 +1,10 @@
 use super::*;
 use bevy::{
-    light::{AtmosphereEnvironmentMapLight, CascadeShadowConfigBuilder, light_consts::lux},
-    pbr::{
-        Atmosphere, AtmosphereMode, AtmosphereSettings, DistanceFog, FogFalloff, ScatteringMedium,
+    light::{
+        Atmosphere, AtmosphereEnvironmentMapLight, CascadeShadowConfigBuilder,
+        atmosphere::ScatteringMedium, light_consts::lux,
     },
+    pbr::{AtmosphereMode, AtmosphereSettings, DistanceFog, FogFalloff},
 };
 use serde::{Deserialize, Serialize};
 use std::f32::consts::PI;
@@ -35,7 +36,7 @@ pub fn add_skybox_to_camera(
         DespawnOnExit(Screen::Gameplay),
         DirectionalLight {
             color: colors::SUN,
-            shadows_enabled: true,
+            shadow_maps_enabled: true,
             illuminance: lux::AMBIENT_DAYLIGHT,
             ..Default::default()
         },
@@ -48,7 +49,7 @@ pub fn add_skybox_to_camera(
         DespawnOnExit(Screen::Gameplay),
         DirectionalLight {
             color: colors::MOON,
-            shadows_enabled: true,
+            shadow_maps_enabled: true,
             illuminance: 24.0,
             ..Default::default()
         },
@@ -56,15 +57,21 @@ pub fn add_skybox_to_camera(
         cascade_shadow_config,
     ));
 
+    // `Atmosphere` marks a planet entity: its `GlobalTransform` is the planet center in
+    // world space, and each camera picks the *nearest* one to render with. It must live on
+    // its own entity, not the camera - otherwise the camera's distance to it is zero, which
+    // is read as the camera sitting `inner_radius` (millions of meters) underground and forces
+    // a much more expensive render path.
+    commands.spawn((
+        Atmosphere::earth(scattering_mediums.add(ScatteringMedium::default())),
+        DespawnOnExit(Screen::Gameplay),
+    ));
+
     commands.entity(*camera).insert((
-        // This is the component that enables atmospheric scattering for a camera
-        // TODO: experiment with scattering medium
-        Atmosphere::earthlike(scattering_mediums.add(ScatteringMedium::default())),
         // The scene is in units of 10km, so we need to scale up the
         // aerial view lut distance and set the scene scale accordingly.
         // Most usages of this feature will not need to adjust this.
         AtmosphereSettings {
-            scene_units_to_m: 1.0,
             aerial_view_lut_max_distance: 40_000.0, //  40 km for a vast scene
 
             // Higher resolution LUTs for smoother gradients and details

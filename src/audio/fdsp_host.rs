@@ -3,10 +3,9 @@ use bevy_seedling::{
     firewheel::{
         StreamInfo,
         channel_config::ChannelConfig,
-        event::ProcEvents,
         node::{
-            AudioNode, AudioNodeInfo, AudioNodeProcessor, ConstructProcessorContext, ProcBuffers,
-            ProcExtra, ProcInfo, ProcessStatus,
+            AudioNode, AudioNodeInfo, AudioNodeProcessor, ConstructProcessorContext, NodeError,
+            ProcBuffers, ProcExtra, ProcInfo, ProcessStatus,
         },
     },
     node::RegisterNode,
@@ -90,20 +89,20 @@ impl PartialEq for FundspConfig {
 impl AudioNode for FundspNode {
     type Configuration = FundspConfig;
 
-    fn info(&self, configuration: &Self::Configuration) -> AudioNodeInfo {
-        AudioNodeInfo::new()
+    fn info(&self, configuration: &Self::Configuration) -> Result<AudioNodeInfo, NodeError> {
+        Ok(AudioNodeInfo::new()
             .debug_name("Fun DSP")
             .channel_config(ChannelConfig::new(
                 configuration.unit.inputs(),
                 configuration.unit.outputs(),
-            ))
+            )))
     }
 
     fn construct_processor(
         &self,
         configuration: &Self::Configuration,
         cx: ConstructProcessorContext,
-    ) -> impl AudioNodeProcessor {
+    ) -> Result<impl AudioNodeProcessor, NodeError> {
         let mut unit = configuration.clone();
         unit.unit
             .set_sample_rate(cx.stream_info.sample_rate.get() as f64);
@@ -112,11 +111,11 @@ impl AudioNode for FundspNode {
         let input_buffer = (0..unit.unit.inputs()).map(|_| 0f32).collect();
         let output_buffer = (0..unit.unit.outputs()).map(|_| 0f32).collect();
 
-        FundspProcessor {
+        Ok(FundspProcessor {
             unit,
             input_buffer,
             output_buffer,
-        }
+        })
     }
 }
 
@@ -131,7 +130,6 @@ impl AudioNodeProcessor for FundspProcessor {
         &mut self,
         info: &ProcInfo,
         ProcBuffers { inputs, outputs }: ProcBuffers,
-        _: &mut ProcEvents,
         _: &mut ProcExtra,
     ) -> ProcessStatus {
         if self.unit.skip_silence
