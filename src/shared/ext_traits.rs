@@ -143,3 +143,63 @@ impl AnimationPlayer {
         });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_vec3_approx_eq(a: Vec3, b: Vec3) {
+        assert!(
+            (a - b).length() < 1e-5,
+            "expected {b:?}, got {a:?} (diff length {})",
+            (a - b).length()
+        );
+    }
+
+    #[test]
+    fn movement_direction_forward_matches_facing() {
+        let transform = Transform::IDENTITY;
+        // Identity faces -Z; pressing "forward" (input.y = 1) should move that way.
+        assert_vec3_approx_eq(
+            transform.movement_direction(Vec2::new(0.0, 1.0)),
+            Vec3::new(0.0, 0.0, -1.0),
+        );
+    }
+
+    #[test]
+    fn movement_direction_strafe_is_perpendicular_to_facing() {
+        let transform = Transform::IDENTITY;
+        assert_vec3_approx_eq(
+            transform.movement_direction(Vec2::new(1.0, 0.0)),
+            Vec3::new(1.0, 0.0, 0.0),
+        );
+    }
+
+    #[test]
+    fn movement_direction_no_input_is_zero() {
+        let transform = Transform::IDENTITY;
+        assert_vec3_approx_eq(transform.movement_direction(Vec2::ZERO), Vec3::ZERO);
+    }
+
+    #[test]
+    fn movement_direction_ignores_pitch() {
+        // Camera tilted to look down/up shouldn't change the flattened ground direction.
+        let level = Transform::IDENTITY;
+        let tilted = Transform::from_rotation(Quat::from_rotation_x(-0.6));
+        assert_vec3_approx_eq(
+            level.movement_direction(Vec2::new(0.0, 1.0)),
+            tilted.movement_direction(Vec2::new(0.0, 1.0)),
+        );
+    }
+
+    #[test]
+    fn movement_direction_follows_yaw() {
+        // Facing +X (rotated -90 degrees around Y from the -Z default) should strafe into +Z.
+        let transform =
+            Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2));
+        assert_vec3_approx_eq(
+            transform.movement_direction(Vec2::new(1.0, 0.0)),
+            Vec3::new(0.0, 0.0, 1.0),
+        );
+    }
+}

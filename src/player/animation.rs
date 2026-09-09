@@ -412,3 +412,81 @@ impl AnimationState {
         )
     }
 }
+
+#[cfg(test)]
+mod animation_state_tests {
+    use super::AnimationState;
+
+    /// One state per animation graph node; `idx()` is used to index straight into that
+    /// `Vec`, so every variant must map to a distinct index in `0..ALL.len()`.
+    const ALL: &[AnimationState] = &[
+        AnimationState::StandIdle,
+        AnimationState::Run(1.0),
+        AnimationState::Sprint(1.0),
+        AnimationState::Jump,
+        AnimationState::JumpLoop,
+        AnimationState::Land,
+        AnimationState::Crouch(1.0),
+        AnimationState::CrouchIdle,
+        AnimationState::Dash,
+    ];
+
+    #[test]
+    fn idx_is_a_bijection_onto_0_len() {
+        let mut seen = vec![false; ALL.len()];
+        for state in ALL {
+            let i = state.idx();
+            assert!(i < ALL.len(), "{state:?}.idx() = {i} is out of range");
+            assert!(
+                !seen[i],
+                "{state:?}.idx() = {i} collides with another variant"
+            );
+            seen[i] = true;
+        }
+    }
+
+    #[test]
+    fn locked_states_cannot_crouch() {
+        // A locked animation (jump/land/dash) should never also report itself croachable.
+        for state in ALL {
+            if state.is_locked() {
+                assert!(
+                    !state.can_crouch(),
+                    "{state:?} is locked but reports can_crouch()"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn only_jump_and_jumploop_are_jumping() {
+        for state in ALL {
+            let expected = matches!(state, AnimationState::Jump | AnimationState::JumpLoop);
+            assert_eq!(
+                state.is_jumping(),
+                expected,
+                "is_jumping() mismatch for {state:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn only_crouch_states_are_crouching() {
+        for state in ALL {
+            let expected = matches!(
+                state,
+                AnimationState::Crouch(_) | AnimationState::CrouchIdle
+            );
+            assert_eq!(
+                state.is_crouching(),
+                expected,
+                "is_crouching() mismatch for {state:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn default_state_is_stand_idle() {
+        assert_eq!(AnimationState::default(), AnimationState::StandIdle);
+    }
+}

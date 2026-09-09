@@ -2,10 +2,7 @@
 name: release
 
 on:
-  push:
-    tags:
-      # Pattern syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
-      - "v[0-9]+.[0-9]+.[0-9]+*"
+  # Trigger this workflow on a manual workflow dispatch.
   workflow_dispatch:
     inputs:
       version:
@@ -43,6 +40,8 @@ on:
         description: "deny warnings"
         default: false
         type: boolean
+  push:
+    branches: [main]
 
 # Cancel the release workflow when a more recent workflow begins.
 concurrency:
@@ -99,7 +98,13 @@ env:
   # This is most useful in combination with
   use_github_cache: true
 
-  toolchain: nightly-2026-01-22
+  # Enable these to deploy on every push to `main`.
+  # Make sure to set up any enabled targets (e.g. the `BUTLER_API_KEY` secret for itch.io).
+  # Warning: if you use private repositories, this will eat through your available worker minutes quickly.
+  deploy_itch: true
+  deploy_gh_pages: false
+
+  toolchain: nightly-2026-08-29
 
 jobs:
   get-version:
@@ -107,6 +112,9 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Get version
         id: version
         # Use the input from workflow dispatch, or fall back to the Cargo.toml version
@@ -124,8 +132,13 @@ jobs:
   forward-env:
     runs-on: ubuntu-latest
     steps:
-      - name: Set workflow_dispatch inputs as outputs
+      - name: Set workflow_dispatch inputs and static toggles as outputs
         id: set-outputs
+        # `inputs.*` are only populated for workflow_dispatch runs; on a push to `main` they're
+        # empty, meaning full per-platform binary builds, GitHub-release uploads, and
+        # deny-warnings all stay manual-dispatch-only. A push to `main` can still auto-build and
+        # deploy the *web* build to itch.io/GitHub Pages, gated by the static `deploy_itch`/
+        # `deploy_gh_pages` toggles above (which aren't dispatch inputs, just repo-owner config).
         run: |
           echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
           echo "build_windows=${{ github.event.inputs.build_windows }}" >> $GITHUB_OUTPUT
@@ -135,6 +148,8 @@ jobs:
           echo "itch=${{ github.event.inputs.itch || env.itch }}" >> $GITHUB_OUTPUT
           echo "upload_to_github=${{ github.event.inputs.upload_to_github }}" >> $GITHUB_OUTPUT
           echo "deny_warnings=${{ github.event.inputs.deny_warnings }}" >> $GITHUB_OUTPUT
+          echo "deploy_itch=${{ env.deploy_itch }}" >> $GITHUB_OUTPUT
+          echo "deploy_gh_pages=${{ env.deploy_gh_pages }}" >> $GITHUB_OUTPUT
     outputs:
       build_windows: ${{ steps.set-outputs.outputs.build_windows }}
       build_macos: ${{ steps.set-outputs.outputs.build_macos }}
@@ -143,11 +158,14 @@ jobs:
       itch: ${{ steps.set-outputs.outputs.itch }}
       upload_to_github: ${{ steps.set-outputs.outputs.upload_to_github }}
       deny_warnings: ${{ steps.set-outputs.outputs.deny_warnings }}
+      deploy_itch: ${{ steps.set-outputs.outputs.deploy_itch }}
+      deploy_gh_pages: ${{ steps.set-outputs.outputs.deploy_gh_pages }}
 
 # Build and package a release for each platform.
   build:
     needs:
       - get-version
+      - forward-env
     env:
       version: ${{ needs.get-version.outputs.version }}
       # Avoid rate-limiting. See: <https://github.com/cargo-bins/cargo-binstall/issues/2045>.
@@ -158,24 +176,27 @@ jobs:
           - platform: web
             targets: wasm32-unknown-unknown
             package_ext: .zip
-            features: web,third_person
+            features: web
             runner: ubuntu-latest
 
           - platform: linux
             targets: x86_64-unknown-linux-gnu
             package_ext: .zip
+            features: native,third_person
             runner: ubuntu-latest
 
           - platform: windows
             targets: x86_64-pc-windows-msvc
             binary_ext: .exe
             package_ext: .zip
+            features: native,third_person
             runner: windows-latest
 
           - platform: macos
             targets: x86_64-apple-darwin aarch64-apple-darwin
             app_suffix: .app/Contents/MacOS
             package_ext: .dmg
+            features: native,third_person
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
     defaults:
@@ -207,7 +228,7 @@ jobs:
           if [ '${{ matrix.platform }}' = 'macos' ]; then
             RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }"'-C link-arg=-Wl,-rpath,@loader_path'
           fi
-          if [ '${{ inputs.deny_warnings }}' = 'true' ]; then
+          if [ '${{ needs.forward-env.outputs.deny_warnings }}' = 'true' ]; then
             RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }"'-Dwarnings'
           fi
           echo "RUSTFLAGS=${RUSTFLAGS}" >> "${GITHUB_ENV}"
@@ -221,10 +242,10 @@ jobs:
 
           # Check if building for this platform is enabled.
           echo 'is_platform_enabled=${{
-            (matrix.platform == 'web' && inputs.build_web) ||
-            (matrix.platform == 'linux' && inputs.build_linux) ||
-            (matrix.platform == 'windows' && inputs.build_windows) ||
-            (matrix.platform == 'macos' && inputs.build_macos)
+            (matrix.platform == 'web' && (needs.forward-env.outputs.build_web == 'true' || (github.event_name == 'push' && (needs.forward-env.outputs.deploy_itch == 'true' || needs.forward-env.outputs.deploy_gh_pages == 'true')))) ||
+            (matrix.platform == 'linux' && needs.forward-env.outputs.build_linux == 'true') ||
+            (matrix.platform == 'windows' && needs.forward-env.outputs.build_windows == 'true') ||
+            (matrix.platform == 'macos' && needs.forward-env.outputs.build_macos == 'true')
           }}' >> "${GITHUB_ENV}"
 
       - name: Checkout repository
@@ -268,14 +289,14 @@ jobs:
         run: |
           cargo binstall --locked -y --force wasm-bindgen-cli
           cargo binstall --locked -y --force wasm-opt
-          bevy build --locked --release --features='${{ matrix.features }}' --yes web --bundle
+          bevy build --locked --release --no-default-features --features='${{ matrix.features }}' --yes web --bundle
           mv 'target/bevy_web/web-release/${{ env.pkg_name }}' '${{ env.app }}'
 
       - name: Build binaries and add them to app (non-Web)
         if: ${{ env.is_platform_enabled == 'true' && matrix.platform != 'web' }}
         run: |
           for target in ${{ matrix.targets }}; do
-            bevy build --locked --release --target="${target}" --features='${{ matrix.features }}'
+            bevy build --locked --release --no-default-features --target="${target}" --features='${{ matrix.features }}'
             mv target/"${target}"/release/'${{ env.pkg_name }}${{ matrix.binary_ext }}' tmp/binary/"${target}"'${{ matrix.binary_ext }}'
           done
           if [ '${{ matrix.platform }}' == 'macos' ]; then
@@ -352,13 +373,13 @@ jobs:
           retention-days: 1
 
       - name: Upload web bundle to workflow artifacts for GitHub Pages (Web)
-        if: ${{ env.is_platform_enabled == 'true' && matrix.platform == 'web' && inputs.deploy_to_github_pages }}
+        if: ${{ env.is_platform_enabled == 'true' && matrix.platform == 'web' && (inputs.deploy_to_github_pages || (github.event_name == 'push' && needs.forward-env.outputs.deploy_gh_pages == 'true')) }}
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.app }}/${{ env.cargo_build_binary_name }}
+          path: ${{ env.app }}
 
       - name: Upload package to GitHub release
-        if: ${{ env.is_platform_enabled == 'true' && inputs.upload_github }}
+        if: ${{ env.is_platform_enabled == 'true' && needs.forward-env.outputs.upload_to_github == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -375,7 +396,7 @@ jobs:
       - forward-env
       - get-version
       - build
-    if: ${{ needs.forward-env.outputs.itch != '' }}
+    if: ${{ needs.forward-env.outputs.itch != '' && (github.event_name != 'push' || needs.forward-env.outputs.deploy_itch == 'true') }}
 
     steps:
       - name: Download packages
@@ -406,7 +427,9 @@ jobs:
 # Deploy to GitHub Pages.
   deploy-to-github-pages:
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - forward-env
+      - build
     permissions:
       # Required to deploy to GitHub Pages.
       pages: write
@@ -416,7 +439,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
-    if: ${{ inputs.deploy_to_github_pages && inputs.build_web }}
+    if: ${{ (inputs.deploy_to_github_pages && inputs.build_web) || (github.event_name == 'push' && needs.forward-env.outputs.deploy_gh_pages == 'true') }}
 
     steps:
       - name: Deploy to GitHub Pages
