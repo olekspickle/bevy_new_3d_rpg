@@ -59,6 +59,7 @@ image = "0.25.6"
 ron = "0.10"
 rand = "0.10"
 serde = "1"
+strum = { version = "0.27", features = ["derive"] }
 thiserror = "2"
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.30", default-features = false }

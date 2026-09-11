@@ -2,10 +2,10 @@
 use crate::asset_loading::{AudioSources, ResourceHandles, Textures};
 use crate::game::{ToggleMute, TogglePause};
 use crate::markers;
-use crate::shared::{AppSystems, GameState, Settings};
+use crate::shared::{AppSystems, Config, GameState, Settings};
 use crate::ui::{
-    self, MainMenuCtx, Modal, ModalInput, Modals, NewModal, PopModal, Props, colors, settings_ui,
-    widget,
+    self, MainMenuCtx, ModalInput, Modals, PopModal, Props, colors, menu_modal, push_modal,
+    settings_ui, widget,
 };
 use bevy::prelude::*;
 use bevy::ui::Val::*;

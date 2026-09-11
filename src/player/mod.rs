@@ -1,13 +1,15 @@
 use crate::asset_loading::{AudioSources, Models};
 use crate::camera::SceneCamera;
 use crate::screens::{Escape, Screen};
-use crate::shared::{AppSystems, Config, EntityExt, GameState, Settings, TransformExt};
+use crate::shared::{
+    AppSystems, Config, EntityExt, GameState, Settings, SettingsChanged, TransformExt,
+};
 #[cfg(feature = "third_person")]
 use crate::third_party::ThirdPersonCameraTarget;
 #[cfg(feature = "top_down")]
 use crate::third_party::TopDownCameraTarget;
 use crate::timers;
-use crate::ui::modal::{Modal, ModalInput};
+use crate::ui::modal::{ModalInput, ModalRoot};
 use avian3d::prelude::*;
 use bevy::platform::time::Instant;
 use bevy::prelude::*;

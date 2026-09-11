@@ -1,6 +1,7 @@
 use super::*;
 #[cfg(feature = "dev")]
 use bevy::ui::Display as NodeDisplay;
+use bevy::ui_widgets::ValueChange;
 use bevy::window::{PresentMode, PrimaryWindow};
 use bevy_enhanced_input::prelude::Start;
 
@@ -38,14 +39,11 @@ markers!(
     SfxVolumeLabel,
     SunCycleLabel,
     SaveSettingsLabel,
-    VsyncLabel,
     FovLabel,
     TabBar,
     TabContent,
     PerfUi
 );
-#[cfg(feature = "dev")]
-markers!(DiagnosticsLabel, DebugUiLabel);
 
 // ============================ CONTROL KNOBS OBSERVERS ============================
 
@@ -78,7 +76,8 @@ pub fn save_settings(
 
 // TAB CHANGING
 fn update_tab_content(
-    settings: Res<Settings>,
+    settings: If<Res<Settings>>,
+    cfg: If<Res<Config>>,
     active_tab: Res<ActiveTab>,
     tab_bar: Query<&Children, With<TabBar>>,
     mut tab_content: Query<(Entity, &Children), With<TabContent>>,
@@ -97,11 +96,13 @@ fn update_tab_content(
                     }
                     match tab {
                         UiTab::Audio => {
-                            commands.spawn(audio_grid()).insert(ChildOf(e));
+                            commands
+                                .spawn(audio_grid(&settings, &cfg))
+                                .insert(ChildOf(e));
                         }
                         UiTab::Video => {
                             commands
-                                .spawn(video_grid(&settings.sun_cycle))
+                                .spawn(video_grid(&settings, &cfg))
                                 .insert(ChildOf(e));
                         }
                         UiTab::Keybindings => {
@@ -120,34 +121,18 @@ fn update_tab_content(
     Ok(())
 }
 
-// ============================ +/- BUTTON HOOKS ============================
+// ============================ SLIDER HOOKS ============================
 
-fn fov_lower(
-    _: On<Pointer<Click>>,
-    cfg: Res<Config>,
+fn fov_changed(
+    value_change: On<ValueChange<f32>>,
     mut settings: ResMut<Settings>,
     mut world_model_projection: Single<&mut Projection>,
 ) {
     let Projection::Perspective(perspective) = world_model_projection.as_mut() else {
         return;
     };
-    let new_fov = (settings.fov - cfg.settings.step.to_degrees()).max(cfg.settings.min_fov);
-    perspective.fov = new_fov.to_radians();
-    settings.fov = perspective.fov.to_degrees();
-}
-
-fn fov_raise(
-    _: On<Pointer<Click>>,
-    cfg: Res<Config>,
-    mut settings: ResMut<Settings>,
-    mut world_model_projection: Single<&mut Projection>,
-) {
-    let Projection::Perspective(perspective) = world_model_projection.as_mut() else {
-        return;
-    };
-    let new_fov = (settings.fov + cfg.settings.step.to_degrees()).min(cfg.settings.max_fov);
-    perspective.fov = new_fov.to_radians();
-    settings.fov = perspective.fov.to_degrees();
+    perspective.fov = value_change.value.to_radians();
+    settings.fov = value_change.value;
 }
 
 fn update_fov_label(settings: Res<Settings>, mut label: Single<&mut Text, With<FovLabel>>) {
@@ -157,26 +142,13 @@ fn update_fov_label(settings: Res<Settings>, mut label: Single<&mut Text, With<F
 }
 
 // GENERAL
-fn general_lower(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
+fn general_changed(
+    value_change: On<ValueChange<f32>>,
     mut settings: ResMut<Settings>,
     mut general: Single<&mut VolumeNode, With<MainBus>>,
 ) {
-    let new_volume = (settings.sound.general - cfg.settings.step).max(cfg.settings.min_volume);
-    settings.sound.general = new_volume;
-    general.volume = Volume::Linear(new_volume);
-}
-
-fn general_raise(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
-    mut settings: ResMut<Settings>,
-    mut general: Single<&mut VolumeNode, With<MainBus>>,
-) {
-    let new_volume = (settings.sound.general + cfg.settings.step).min(cfg.settings.max_volume);
-    settings.sound.general = new_volume;
-    general.volume = Volume::Linear(new_volume);
+    settings.sound.general = value_change.value;
+    general.volume = Volume::Linear(value_change.value);
 }
 
 fn update_general_volume_label(
@@ -189,25 +161,12 @@ fn update_general_volume_label(
 }
 
 // MUSIC
-fn music_lower(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
+fn music_changed(
+    value_change: On<ValueChange<f32>>,
     mut settings: ResMut<Settings>,
     mut music: Single<&mut VolumeNode, With<SamplerPool<MusicPool>>>,
 ) {
-    let new_volume = (settings.sound.music - cfg.settings.step).max(cfg.settings.min_volume);
-    settings.sound.music = new_volume;
-    music.volume = settings.music();
-}
-
-fn music_raise(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
-    mut settings: ResMut<Settings>,
-    mut music: Single<&mut VolumeNode, With<SamplerPool<MusicPool>>>,
-) {
-    let new_volume = (settings.sound.music + cfg.settings.step).min(cfg.settings.max_volume);
-    settings.sound.music = new_volume;
+    settings.sound.music = value_change.value;
     music.volume = settings.music();
 }
 
@@ -221,25 +180,12 @@ fn update_music_volume_label(
 }
 
 // SFX
-fn sfx_lower(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
+fn sfx_changed(
+    value_change: On<ValueChange<f32>>,
     mut settings: ResMut<Settings>,
     mut sfx: Single<&mut VolumeNode, With<SoundEffectsBus>>,
 ) {
-    let new_volume = (settings.sound.sfx - cfg.settings.step).max(cfg.settings.min_volume);
-    settings.sound.sfx = new_volume;
-    sfx.volume = settings.sfx();
-}
-
-fn sfx_raise(
-    _: On<Pointer<Click>>,
-    cfg: ResMut<Config>,
-    mut settings: ResMut<Settings>,
-    mut sfx: Single<&mut VolumeNode, With<SoundEffectsBus>>,
-) {
-    let new_volume = (settings.sound.sfx + cfg.settings.step).min(cfg.settings.max_volume);
-    settings.sound.sfx = new_volume;
+    settings.sound.sfx = value_change.value;
     sfx.volume = settings.sfx();
 }
 
@@ -276,64 +222,44 @@ fn to_the_right_tab(_: On<Start<CycleTab>>, mut active_tab: ResMut<ActiveTab>) {
     }
 }
 
-fn click_toggle_vsync(
-    _: On<Pointer<Click>>,
+fn vsync_changed(
+    value_change: On<ValueChange<bool>>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
-) -> Result {
+) {
     for mut window in windows.iter_mut() {
-        if matches!(window.present_mode, PresentMode::AutoVsync) {
-            window.present_mode = PresentMode::AutoNoVsync;
+        window.present_mode = if value_change.value {
+            PresentMode::AutoVsync
         } else {
-            window.present_mode = PresentMode::AutoVsync;
-        }
+            PresentMode::AutoNoVsync
+        };
         info!(" window present_mode changed to: {:?}", window.present_mode);
     }
-
-    Ok(())
 }
 
 #[cfg(feature = "dev")]
-fn click_toggle_diagnostics(
-    _: On<Pointer<Click>>,
+fn diagnostics_changed(
+    value_change: On<ValueChange<bool>>,
     mut state: ResMut<GameState>,
     mut perf_ui: Query<&mut Node, With<PerfUi>>,
-    mut label: Query<&mut Text, With<DiagnosticsLabel>>,
 ) {
+    state.diagnostics = value_change.value;
     if let Ok(mut perf_ui) = perf_ui.single_mut() {
-        state.diagnostics = !state.diagnostics;
-        let s = if perf_ui.display == NodeDisplay::None {
-            perf_ui.display = NodeDisplay::Flex;
-            "on"
+        perf_ui.display = if value_change.value {
+            NodeDisplay::Flex
         } else {
-            perf_ui.display = NodeDisplay::None;
-            "off"
+            NodeDisplay::None
         };
-
-        if let Ok(mut label) = label.single_mut() {
-            label.0 = s.to_owned();
-        }
     }
 }
 
 #[cfg(feature = "dev")]
-fn click_toggle_debug_ui(
-    _: On<Pointer<Click>>,
-    children: Query<&Children>,
-    mut commands: Commands,
+fn debug_ui_changed(
+    value_change: On<ValueChange<bool>>,
     mut state: ResMut<GameState>,
-    mut label: Query<Entity, With<DebugUiLabel>>,
+    mut commands: Commands,
 ) {
-    state.debug_ui = !state.debug_ui;
-
-    if let Ok(mut label) = label.single_mut() {
-        commands.trigger(ToggleDebugUi);
-        let s = if state.debug_ui { "on" } else { "off" };
-        label.replace_recursive(
-            children,
-            commands,
-            (widget::btn(s, click_toggle_debug_ui), DebugUiLabel),
-        );
-    }
+    state.debug_ui = value_change.value;
+    commands.trigger(ToggleDebugUi);
 }
 
 fn click_toggle_sun_cycle(
@@ -352,10 +278,7 @@ fn click_toggle_sun_cycle(
         label.replace_recursive(
             children,
             commands,
-            (
-                widget::btn(settings.sun_cycle.as_str(), click_toggle_sun_cycle),
-                SunCycleLabel,
-            ),
+            widget::btn(settings.sun_cycle.as_str(), click_toggle_sun_cycle),
         );
     }
 }
@@ -375,7 +298,7 @@ fn click_toggle_settings(
 
 // ============================ UI ============================
 
-pub fn settings_ui() -> impl Bundle {
+pub fn settings_ui(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
     (
         widget::ui_root("Settings Screen"),
         BackgroundColor(colors::TRANSLUCENT),
@@ -390,7 +313,11 @@ pub fn settings_ui() -> impl Bundle {
             },
             children![
                 tab_bar(),
-                (TabContent, Node::default(), children![audio_grid()]),
+                (
+                    TabContent,
+                    Node::default(),
+                    children![audio_grid(settings, cfg)]
+                ),
                 bottom_row()
             ]
         )],
@@ -454,7 +381,9 @@ fn bottom_row() -> impl Bundle {
     )
 }
 
-fn video_grid(cycle: &SunCycle) -> impl Bundle {
+fn video_grid(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
+    let fov_range = cfg.settings.min_fov..=cfg.settings.max_fov;
+    let fov_step = cfg.settings.step.to_degrees();
     (
         Name::new("Settings Video Grid"),
         Node {
@@ -470,39 +399,35 @@ fn video_grid(cycle: &SunCycle) -> impl Bundle {
         children![
             widget::label("Sun cycle"),
             (
-                widget::btn(cycle.as_str(), click_toggle_sun_cycle),
+                widget::btn(settings.sun_cycle.as_str(), click_toggle_sun_cycle),
                 SunCycleLabel
             ),
             widget::label("FOV"),
-            widget::plus_minus_bar(FovLabel, fov_lower, fov_raise),
-            // TODO: do checkboxes when feathers
+            widget::slider(FovLabel, fov_range, fov_step, settings.fov, fov_changed),
             widget::label("VSync"),
-            (widget::btn("on", click_toggle_vsync), VsyncLabel),
+            widget::checkbox(true, vsync_changed),
         ],
         #[cfg(feature = "dev")]
         children![
             widget::label("Sun cycle"),
             (
-                widget::btn(cycle.as_str(), click_toggle_sun_cycle),
+                widget::btn(settings.sun_cycle.as_str(), click_toggle_sun_cycle),
                 SunCycleLabel
             ),
             widget::label("FOV"),
-            widget::plus_minus_bar(FovLabel, fov_lower, fov_raise),
-            // TODO: do checkboxes when feathers
+            widget::slider(FovLabel, fov_range, fov_step, settings.fov, fov_changed),
             widget::label("VSync"),
-            (widget::btn("on", click_toggle_vsync), VsyncLabel),
+            widget::checkbox(true, vsync_changed),
             widget::label("diagnostics"),
-            (
-                widget::btn("on", click_toggle_diagnostics),
-                DiagnosticsLabel
-            ),
+            widget::checkbox(true, diagnostics_changed),
             widget::label("debug ui"),
-            (widget::btn("off", click_toggle_debug_ui), DebugUiLabel),
+            widget::checkbox(false, debug_ui_changed),
         ],
     )
 }
 
-fn audio_grid() -> impl Bundle {
+fn audio_grid(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
+    let volume_range = cfg.settings.min_volume..=cfg.settings.max_volume;
     (
         Name::new("Settings Grid"),
         Node {
@@ -514,11 +439,29 @@ fn audio_grid() -> impl Bundle {
         },
         children![
             widget::label("general"),
-            widget::plus_minus_bar(GeneralVolumeLabel, general_lower, general_raise),
+            widget::slider(
+                GeneralVolumeLabel,
+                volume_range.clone(),
+                cfg.settings.step,
+                settings.sound.general,
+                general_changed,
+            ),
             widget::label("music"),
-            widget::plus_minus_bar(MusicVolumeLabel, music_lower, music_raise),
+            widget::slider(
+                MusicVolumeLabel,
+                volume_range.clone(),
+                cfg.settings.step,
+                settings.sound.music,
+                music_changed,
+            ),
             widget::label("sfx"),
-            widget::plus_minus_bar(SfxVolumeLabel, sfx_lower, sfx_raise),
+            widget::slider(
+                SfxVolumeLabel,
+                volume_range,
+                cfg.settings.step,
+                settings.sound.sfx,
+                sfx_changed,
+            ),
         ],
     )
 }

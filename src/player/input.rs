@@ -3,7 +3,8 @@ use bevy::ecs::{lifecycle::HookContext, world::DeferredWorld};
 
 pub fn plugin(app: &mut App) {
     app.add_input_context::<PlayerInput>()
-        .add_observer(on_modal_add);
+        .add_observer(on_modal_add)
+        .add_observer(reload_player_bindings);
 }
 
 #[derive(InputAction)]
@@ -23,7 +24,15 @@ pub struct Dash;
 pub(crate) struct PlayerInput;
 
 impl PlayerInput {
+    /// Reads the current keyboard/mouse bindings from [`Settings::input_map`] so rebinding in the
+    /// keybind editor takes effect.
+    ///
+    /// Note: Gamepad isn't rebindable (see [`InputSettings`]), so those
+    /// stick around as fixed fallback bindings alongside whatever the player
+    /// configured for keyboard/mouse.
     fn on_add(mut world: DeferredWorld, ctx: HookContext) {
+        let keys = world.resource::<Settings>().input_map.clone();
+
         world.commands().entity(ctx.entity).insert((
             actions!(PlayerInput[
                 (
@@ -31,8 +40,9 @@ impl PlayerInput {
                     DeadZone::default(),
                     Scale::splat(0.3),
                     Bindings::spawn((
-                        Cardinal::wasd_keys(),
-                        Cardinal::arrows(),
+                        Cardinal::new(keys.forward[0], keys.left[0], keys.backward[0], keys.right[0]),
+                        Cardinal::new(keys.forward[1], keys.left[1], keys.backward[1], keys.right[1]),
+                        Cardinal::new(keys.forward[2], keys.left[2], keys.backward[2], keys.right[2]),
                         Axial::left_stick(),
                     )),
                 ),
@@ -42,20 +52,20 @@ impl PlayerInput {
                         require_reset: true,
                         ..Default::default()
                     },
-                    bindings![KeyCode::ControlLeft, GamepadButton::East],
+                    bindings![keys.crouch[0], keys.crouch[1], keys.crouch[2], GamepadButton::East],
                 ),
                 (
                     Action::<Jump>::new(),
-                    bindings![KeyCode::Space, GamepadButton::South],
+                    bindings![keys.jump[0], keys.jump[1], keys.jump[2], GamepadButton::South],
                 ),
                 (
                     Action::<Sprint>::new(),
-                    bindings![KeyCode::ShiftLeft, GamepadButton::LeftThumb],
+                    bindings![keys.sprint[0], keys.sprint[1], keys.sprint[2], GamepadButton::LeftThumb],
                 ),
-                // (
-                //     Action::<Dash>::new(),
-                //     bindings![KeyCode::AltLeft, GamepadButton::LeftTrigger],
-                // ),
+                (
+                    Action::<Dash>::new(),
+                    bindings![keys.dash[0], keys.dash[1], keys.dash[2], GamepadButton::LeftTrigger],
+                ),
                 // (
                 //     Action::<Attack>::new(),
                 //     bindings![MouseButton::Left, GamepadButton::RightTrigger2],
@@ -88,10 +98,32 @@ impl PlayerInput {
     }
 }
 
-fn on_modal_add(_: On<Add, Modal>, mut commands: Commands, players_q: Query<Entity, With<Player>>) {
+fn on_modal_add(
+    _: On<Add, ModalRoot>,
+    mut commands: Commands,
+    players_q: Query<Entity, With<Player>>,
+) {
     // TODO: only do that for the player that called the modal
     for e in players_q.iter() {
         commands.entity(e).insert_if_new(modal_ctx_active());
+    }
+}
+
+/// Rebuild the live player's bindings from [`Settings::input_map`] whenever the keybind editor
+/// commits a change, so a rebind takes effect immediately instead of only on the next respawn.
+fn reload_player_bindings(
+    _: On<SettingsChanged>,
+    mut commands: Commands,
+    players_q: Query<Entity, With<PlayerInput>>,
+) {
+    for player in &players_q {
+        // `on_add` only fires on a fresh insertion, so the actions have to actually be removed
+        // first - re-inserting an already-present `PlayerInput` marker would be a no-op.
+        commands
+            .entity(player)
+            .despawn_related::<Actions<PlayerInput>>()
+            .remove::<PlayerInput>()
+            .insert(PlayerInput);
     }
 }
 

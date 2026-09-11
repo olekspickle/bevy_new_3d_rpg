@@ -111,10 +111,7 @@ fn trigger_menu_toggle_on_esc(
 
     if modals.is_empty() {
         info!("triggering main menu");
-        commands.trigger(NewModal {
-            entity: on.entity,
-            modal: Modal::Main,
-        });
+        push_modal(&mut commands, on.entity, menu_modal());
     } else {
         info!("popping modal");
         commands.entity(on.entity).trigger(PopModal);

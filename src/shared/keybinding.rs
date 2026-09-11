@@ -1,6 +1,7 @@
 use super::*;
 use bevy_enhanced_input::prelude::Binding;
 use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoStaticStr};
 
 /// Number of input columns.
 pub const BINDINGS_COUNT: usize = 3;
@@ -41,6 +42,51 @@ impl InputSettings {
         self.sprint.fill(Binding::None);
         self.crouch.fill(Binding::None);
         self.attack.fill(Binding::None);
+    }
+}
+
+/// Identifies one rebindable action for the keybind editor UI and for building live
+/// `bevy_enhanced_input` bindings from [`InputSettings`] at runtime.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, EnumIter, IntoStaticStr)]
+pub enum KeybindAction {
+    Forward,
+    Left,
+    Backward,
+    Right,
+    Jump,
+    Crouch,
+    Sprint,
+    Dash,
+}
+
+impl KeybindAction {
+    pub fn bindings<'a>(&self, settings: &'a InputSettings) -> &'a [Binding; BINDINGS_COUNT] {
+        match self {
+            Self::Forward => &settings.forward,
+            Self::Left => &settings.left,
+            Self::Backward => &settings.backward,
+            Self::Right => &settings.right,
+            Self::Jump => &settings.jump,
+            Self::Crouch => &settings.crouch,
+            Self::Sprint => &settings.sprint,
+            Self::Dash => &settings.dash,
+        }
+    }
+
+    pub fn bindings_mut<'a>(
+        &self,
+        settings: &'a mut InputSettings,
+    ) -> &'a mut [Binding; BINDINGS_COUNT] {
+        match self {
+            Self::Forward => &mut settings.forward,
+            Self::Left => &mut settings.left,
+            Self::Backward => &mut settings.backward,
+            Self::Right => &mut settings.right,
+            Self::Jump => &mut settings.jump,
+            Self::Crouch => &mut settings.crouch,
+            Self::Sprint => &mut settings.sprint,
+            Self::Dash => &mut settings.dash,
+        }
     }
 }
 

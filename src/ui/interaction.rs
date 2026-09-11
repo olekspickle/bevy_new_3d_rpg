@@ -1,7 +1,9 @@
 //! This module contains the logic for handling interactions
 //! with the UI using picking backend observers
 use super::*;
+use bevy::ui_widgets::{SliderRange, SliderValue};
 use bevy::window::CursorOptions;
+use widget::SliderFill;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_observer(apply_palette_on_over)
@@ -9,7 +11,24 @@ pub(super) fn plugin(app: &mut App) {
         .add_observer(apply_palette_on_click)
         .add_observer(apply_palette_on_release)
         .add_observer(play_sound_effect_on_click)
-        .add_observer(play_sound_effect_on_over);
+        .add_observer(play_sound_effect_on_over)
+        .add_systems(Update, update_slider_fill);
+}
+
+/// Keeps a `widget::slider`'s fill bar width in sync with its `SliderValue`, whether that
+/// value changed from a drag, a click on the track, or a keyboard nudge.
+fn update_slider_fill(
+    sliders_q: Query<(&SliderValue, &SliderRange, &Children), Changed<SliderValue>>,
+    mut fill_q: Query<&mut Node, With<SliderFill>>,
+) {
+    for (value, range, children) in &sliders_q {
+        let percent = (range.thumb_position(value.0) * 100.0).clamp(0.0, 100.0);
+        for child in children.iter() {
+            if let Ok(mut node) = fill_q.get_mut(child) {
+                node.width = Percent(percent);
+            }
+        }
+    }
 }
 
 fn apply_palette_on_click(

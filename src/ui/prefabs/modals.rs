@@ -3,19 +3,17 @@ use super::*;
 pub fn click_to_menu(_: On<Pointer<Click>>, mut commands: Commands) {
     commands.trigger(GoTo(Screen::Title));
 }
-pub fn click_spawn_settings(on: On<Pointer<Click>>, mut commands: Commands) {
-    commands.trigger(NewModal {
-        entity: on.entity,
-        modal: Modal::Settings,
-    });
+pub fn click_spawn_settings(
+    on: On<Pointer<Click>>,
+    settings: Res<Settings>,
+    cfg: Res<Config>,
+    mut commands: Commands,
+) {
+    push_modal(&mut commands, on.entity, settings_modal(&settings, &cfg));
 }
 
-pub fn settings_modal() -> impl Bundle {
-    (
-        DespawnOnExit(Screen::Gameplay),
-        Modal::Settings,
-        settings_ui(),
-    )
+pub fn settings_modal(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
+    settings_ui(settings, cfg)
 }
 
 pub fn menu_modal() -> impl Bundle {
@@ -23,8 +21,6 @@ pub fn menu_modal() -> impl Bundle {
         .width(Vw(15.0))
         .padding(UiRect::axes(Vw(2.0), Vw(0.5)));
     (
-        DespawnOnExit(Screen::Gameplay),
-        Modal::Main,
         widget::ui_root("In game menu"),
         children![(
             BorderColor::all(colors::WHITEISH),

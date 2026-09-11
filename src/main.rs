@@ -104,9 +104,6 @@ fn set_window_icon(
     primary_window: Query<Entity, With<PrimaryWindow>>,
 ) -> Result {
     info!("setting window icon");
-    // let Some(primary) = windows.get_window(primary_entity) else {
-    //     return Ok(());
-    // };
     let primary_entity = primary_window.single()?;
 
     WINIT_WINDOWS.with_borrow_mut(|windows| {

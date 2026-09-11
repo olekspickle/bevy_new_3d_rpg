@@ -98,6 +98,10 @@ impl Transform {
 
 #[ext(EntityExt)]
 impl Entity {
+    /// Despawns this entity's children, then inserts `r` onto this same entity — refreshing
+    /// its displayed content in place. Any component already on this entity (e.g. an
+    /// identifying marker) that isn't part of `r` is left untouched, so callers should not
+    /// include it again in `r`.
     pub fn replace_recursive(
         &mut self,
         children_q: Query<&Children>,
@@ -108,10 +112,8 @@ impl Entity {
             for child in c.iter() {
                 commands.entity(child).despawn();
             }
-
-            let text = commands.spawn(r).id();
-            commands.entity(*self).add_children(&[text]);
         }
+        commands.entity(*self).insert(r);
     }
 
     pub fn get_recursive<T: Component>(

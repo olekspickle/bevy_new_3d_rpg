@@ -17,6 +17,7 @@ pub mod modal;
 mod perf;
 mod prefabs;
 mod props;
+pub mod text_edit;
 pub mod widget;
 
 pub use constants::*;
@@ -25,7 +26,12 @@ pub use prefabs::*;
 pub use props::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((prefabs::plugin, interaction::plugin));
+    app.add_plugins((
+        prefabs::plugin,
+        interaction::plugin,
+        text_edit::plugin,
+        widget::plugin,
+    ));
 
     #[cfg(feature = "dev")]
     app.add_plugins(perf::plugin);

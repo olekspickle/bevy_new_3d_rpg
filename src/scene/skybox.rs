@@ -16,6 +16,17 @@ pub fn plugin(app: &mut App) {
 
 markers!(Sun, Moon);
 
+/// Shared BSN scene for the Sun/Moon directional lights: patched per-caller for
+/// color/illuminance (see `add_skybox_to_camera`). Everything both lights need
+/// but don't differ on (currently just `shadow_maps_enabled`) lives here once.
+fn directional_light() -> impl Scene {
+    bsn! {
+        DirectionalLight {
+            shadow_maps_enabled: true,
+        }
+    }
+}
+
 /// Mainly this example:
 /// <https://bevyengine.org/examples/3d-rendering/atmosphere/>
 pub fn add_skybox_to_camera(
@@ -31,31 +42,38 @@ pub fn add_skybox_to_camera(
     }
     .build();
 
-    commands.spawn((
-        Sun,
-        DespawnOnExit(Screen::Gameplay),
-        DirectionalLight {
-            color: colors::SUN,
-            shadow_maps_enabled: true,
-            illuminance: lux::AMBIENT_DAYLIGHT,
-            ..Default::default()
-        },
-        Transform::from_xyz(0.0, 0.0, 200.0).looking_at(Vec3::ZERO, Vec3::Y),
-        cascade_shadow_config.clone(),
-    ));
+    // `Transform`/`CascadeShadowConfig`/`DespawnOnExit` are precomputed runtime values with
+    // no shared defaults to patch, so they're inserted as plain components on top of the
+    // scene rather than forced through `bsn!`.
+    commands
+        .spawn_scene(bsn! {
+            directional_light()
+            Sun
+            DirectionalLight {
+                color: {colors::SUN},
+                illuminance: {lux::AMBIENT_DAYLIGHT},
+            }
+        })
+        .insert((
+            Transform::from_xyz(0.0, 0.0, 200.0).looking_at(Vec3::ZERO, Vec3::Y),
+            cascade_shadow_config.clone(),
+            DespawnOnExit(Screen::Gameplay),
+        ));
 
-    commands.spawn((
-        Moon,
-        DespawnOnExit(Screen::Gameplay),
-        DirectionalLight {
-            color: colors::MOON,
-            shadow_maps_enabled: true,
-            illuminance: 24.0,
-            ..Default::default()
-        },
-        Transform::from_xyz(0.0, 0.0, -200.0).looking_at(Vec3::ZERO, Vec3::Y),
-        cascade_shadow_config,
-    ));
+    commands
+        .spawn_scene(bsn! {
+            directional_light()
+            Moon
+            DirectionalLight {
+                color: {colors::MOON},
+                illuminance: 24.0,
+            }
+        })
+        .insert((
+            Transform::from_xyz(0.0, 0.0, -200.0).looking_at(Vec3::ZERO, Vec3::Y),
+            cascade_shadow_config,
+            DespawnOnExit(Screen::Gameplay),
+        ));
 
     // `Atmosphere` marks a planet entity: its `GlobalTransform` is the planet center in
     // world space, and each camera picks the *nearest* one to render with. It must live on
