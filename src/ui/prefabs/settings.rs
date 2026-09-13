@@ -49,28 +49,24 @@ markers!(
 
 pub fn save_settings(
     _: On<Pointer<Click>>,
-    settings: Res<Settings>,
+    mut commands: Commands,
     children_q: Query<&Children>,
     root: Query<&Children, With<SaveSettingsLabel>>,
     mut text_q: Query<&mut Text>,
 ) {
+    commands.queue(bevy::settings::SaveSettingsSync::Always);
+    info!("settings saved");
     // TODO: this is an insane nesting, improve it
-    match settings.save() {
-        Ok(()) => {
-            info!("writing settings to '{SETTINGS_PATH}'");
-            if let Ok(children) = root.single() {
-                for child in children.iter() {
-                    if let Ok(grandchildren) = children_q.get(child) {
-                        for gc in grandchildren.iter() {
-                            if let Ok(mut label) = text_q.get_mut(gc) {
-                                label.0 = "Saved!".to_string();
-                            }
-                        }
+    if let Ok(children) = root.single() {
+        for child in children.iter() {
+            if let Ok(grandchildren) = children_q.get(child) {
+                for gc in grandchildren.iter() {
+                    if let Ok(mut label) = text_q.get_mut(gc) {
+                        label.0 = "Saved!".to_string();
                     }
                 }
             }
         }
-        Err(e) => error!("unable to write settings to '{SETTINGS_PATH}': {e}"),
     }
 }
 

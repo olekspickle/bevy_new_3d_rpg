@@ -1,21 +1,15 @@
 use super::*;
 use crate::scene::SunCycle;
+use bevy::settings::{ReflectSettingsGroup, SettingsGroup};
 use bevy_seedling::prelude::Volume;
-use serde::{Deserialize, Serialize};
-use std::{error::Error, fs};
-
-pub const SETTINGS_PATH: &str = "assets/settings.ron";
 
 pub fn plugin(app: &mut App) {
+    app.register_type::<Settings>();
     app.init_resource::<Settings>();
-    app.add_systems(
-        OnEnter(Screen::Title),
-        load_settings.run_if(resource_exists::<Config>.and_then(run_once)),
-    );
 }
 
-#[derive(Resource, Reflect, Deserialize, Serialize, Debug, Clone)]
-#[reflect(Resource)]
+#[derive(Resource, SettingsGroup, Reflect, Debug, Clone)]
+#[reflect(Resource, SettingsGroup, Default)]
 pub struct Settings {
     // audio
     pub sound: SoundPreset,
@@ -37,18 +31,6 @@ impl Settings {
     pub fn sfx(&self) -> Volume {
         Volume::Linear(self.sound.general * self.sound.sfx)
     }
-
-    pub fn read() -> Result<Self, Box<dyn Error>> {
-        let content = fs::read_to_string(SETTINGS_PATH)?;
-        let settings = ron::from_str(&content).unwrap_or_default();
-        Ok(settings)
-    }
-
-    pub fn save(&self) -> Result<(), Box<dyn Error>> {
-        let content = ron::ser::to_string_pretty(self, Default::default())?;
-        fs::write(SETTINGS_PATH, content)?;
-        Ok(())
-    }
 }
 
 impl Default for Settings {
@@ -60,21 +42,6 @@ impl Default for Settings {
             input_map: InputSettings::default(),
         }
     }
-}
-
-fn load_settings(mut commands: Commands) {
-    let settings = match Settings::read() {
-        Ok(settings) => {
-            info!("loaded settings from '{SETTINGS_PATH}'");
-            settings
-        }
-        Err(e) => {
-            info!("unable to load settings from '{SETTINGS_PATH}', switching to defaults: {e}");
-            Default::default()
-        }
-    };
-
-    commands.insert_resource(settings);
 }
 
 /// Fired when [`Settings`] change so settings UI can refresh its content.

@@ -5,7 +5,7 @@
 use bevy::log::tracing_subscriber::{field::MakeExt, fmt};
 use bevy::{
     app::App, asset::AssetMetaCheck, asset::load_internal_binary_asset, ecs::error::error, log,
-    prelude::*, window::PrimaryWindow, winit::WINIT_WINDOWS,
+    prelude::*, settings::SettingsPlugin, window::PrimaryWindow, winit::WINIT_WINDOWS,
 };
 use winit::window::Icon;
 
@@ -82,6 +82,7 @@ fn main() {
         screens::plugin,
         game::plugin,
     ))
+    .add_plugins(SettingsPlugin::new(NAME))
     .add_systems(Startup, set_window_icon);
 
     // override default font

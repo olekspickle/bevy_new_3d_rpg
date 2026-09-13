@@ -4,7 +4,7 @@ use crate::game::{ToggleDebugUi, TogglePause};
 use crate::markers;
 use crate::scene::SunCycle;
 use crate::screens::{Escape, GoTo, Screen};
-use crate::shared::{Config, EntityExt, GameState, SETTINGS_PATH, Settings};
+use crate::shared::{Config, EntityExt, GameState, Settings};
 use bevy::prelude::*;
 use bevy::{ecs::spawn::SpawnRelated, ui::Val::*, ui_widgets::Button};
 use bevy_seedling::prelude::*;

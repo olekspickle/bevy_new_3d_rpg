@@ -46,7 +46,7 @@ To set this up, follow the instructions in the [release announcement](https://be
 - [x] different music(exploration, combat) on zone change event with music crossfade and playback tracking
 - [x] setup for playing music from a list of tracks with deterministic never repeating playback (thx [bevy_shuffle_bag])
 - [x] consistent Esc back navigation in gameplay and menu via stacked modals (kudos for the idea to skyemakesgames)
-- [x] serialize and save settings
+- [x] serialize and save settings via [bevy settings] (SettingsGroup) to a platform-native location (`~/.local/share/bevy_new_3d_rpg/settings.toml` on Linux)
 - [x] audio, video and keys rebind tabs in settings (currently broken)
 - [x] easy drop in scene integration using awesome [skein] with a simple scene
 - [x] custom font replace example using pre-loaded font
@@ -146,6 +146,7 @@ See the [credits](assets/credits.json) for more information.
 [bevy_cli]: https://github.com/TheBevyFlock/bevy_cli
 [bevy-learn]: https://bevyengine.org/learn/
 [bevy_seedling]: https://github.com/CorvusPrudens/bevy_seedling
+[bevy settings]: https://github.com/bevyengine/bevy/tree/main/crates/bevy_settings
 [bevy_third_person_camera]: https://github.com/The-DevBlog/bevy_third_person_camera
 [bevy_top_down_camera]: https://github.com/olekspickle/bevy_top_down_camera
 [bevy_ahoy]: https://github.com/janhohenheim/bevy_ahoy
