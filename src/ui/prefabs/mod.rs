@@ -12,5 +12,8 @@ pub use showcase::*;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((keybind_editor::plugin, settings::plugin))
-        .add_systems(Update, toggle_ui_showcase);
+        .add_systems(
+            Update,
+            toggle_ui_showcase.run_if(resource_exists::<crate::asset_loading::Textures>),
+        );
 }
