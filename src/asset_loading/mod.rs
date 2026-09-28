@@ -1,167 +1,164 @@
+//! Asset collections loaded by `bevy_asset_loader` in `screens::loading::preload_assets`.
 use crate::shared::Config;
-use bevy::asset::Asset;
 use bevy::prelude::*;
+use bevy_asset_loader::asset_collection::AssetCollection;
 use bevy_seedling::sample::AudioSample;
 use bevy_shuffle_bag::ShuffleBag;
 use bevy_sprinkles::prelude::ParticlesAsset;
 
 pub mod ron;
-mod tracking;
-pub(crate) use tracking::*;
 
 pub fn plugin(app: &mut App) {
-    // start asset loading
-    app.add_plugins(tracking::plugin)
-        .add_plugins(ron::RonLoadPlugin::<Config>::default())
-        .load_resource_from_path::<Config>("config.ron")
-        .load_resource::<AudioSources>()
-        .load_resource::<Particles>()
-        .load_resource::<Textures>()
-        .load_resource::<Models>();
-    // .load_resource::<ShaderAssets>()
-    // .load_resource::<Fonts>();
+    app.add_plugins(ron::RonLoadPlugin::<Config>::default())
+        // Picks up hot-reloads; the initial insert is done by the loading state.
+        .add_systems(
+            Update,
+            sync_config.run_if(
+                resource_exists::<ConfigHandle>.and_then(resource_changed::<Assets<Config>>),
+            ),
+        );
 }
 
-#[derive(Asset, Clone, Reflect, Resource)]
-#[reflect(Resource)]
+/// Keeps the `config.ron` handle alive and gates the boot loading state on it.
+#[derive(Resource)]
+pub(crate) struct ConfigHandle {
+    config: Handle<Config>,
+}
+
+// Manual impl: the derive tracks via `load_untyped`, which routes `.ron` to the sprinkles loader.
+impl AssetCollection for ConfigHandle {
+    fn create(world: &mut World) -> Self {
+        let config = world.resource::<AssetServer>().load(Self::PATH);
+        Self { config }
+    }
+
+    fn load(world: &mut World) -> Vec<UntypedHandle> {
+        let config: Handle<Config> = world.resource::<AssetServer>().load(Self::PATH);
+        vec![config.untyped()]
+    }
+}
+
+impl ConfigHandle {
+    const PATH: &'static str = "config.ron";
+}
+
+/// Clones the loaded `config.ron` into the world as a [`Config`] resource.
+pub(crate) fn sync_config(
+    handle: Res<ConfigHandle>,
+    assets: Res<Assets<Config>>,
+    mut commands: Commands,
+) {
+    if let Some(cfg) = assets.get(&handle.config) {
+        commands.insert_resource(cfg.clone());
+    }
+}
+
+/// UI icons: pause/mute for the gameplay HUD, github for the showcase modal.
+#[derive(AssetCollection, Resource, Clone)]
 pub struct Textures {
-    #[dependency]
+    #[asset(path = "textures/github.png")]
     pub github: Handle<Image>,
-    #[dependency]
+    #[asset(path = "textures/pause.png")]
     pub pause: Handle<Image>,
-    #[dependency]
+    #[asset(path = "textures/mute.png")]
     pub mute: Handle<Image>,
 }
 
-impl FromWorld for Textures {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.resource::<AssetServer>();
-        Self {
-            github: assets.load("textures/github.png"),
-            pause: assets.load("textures/pause.png"),
-            mute: assets.load("textures/mute.png"),
-        }
-    }
-}
-
-#[derive(Asset, Clone, Reflect, Resource)]
-#[reflect(Resource)]
+/// Player model and the entry scene; needed when the level spawns in `LoadingScreen::Level`.
+#[derive(AssetCollection, Resource, Clone)]
 pub struct Models {
-    #[dependency]
+    #[asset(path = "models/player.glb")]
     pub player: Handle<Gltf>,
-    #[dependency]
+    #[asset(path = "models/scene2.gltf")]
     pub entry_scene: Handle<Gltf>,
 }
 
-impl FromWorld for Models {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.resource::<AssetServer>();
-        Self {
-            player: assets.load("models/player.glb"),
-            entry_scene: assets.load("models/scene.gltf"),
-        }
-    }
+/// Raw audio handles; converted into [`AudioSources`] once loaded.
+#[derive(AssetCollection, Resource, Clone)]
+pub(crate) struct AudioHandles {
+    #[asset(path = "audio/sfx/btn-hover.ogg")]
+    hover: Handle<AudioSample>,
+    #[asset(path = "audio/sfx/btn-press.ogg")]
+    press: Handle<AudioSample>,
+    #[asset(
+        paths(
+            "audio/sfx/step.ogg",
+            "audio/sfx/step1.ogg",
+            "audio/sfx/step2.ogg",
+            "audio/sfx/step3.ogg",
+            "audio/sfx/step4.ogg"
+        ),
+        collection(typed)
+    )]
+    steps: Vec<Handle<AudioSample>>,
+    #[asset(paths("audio/music/smnbl-green-embrace.ogg"), collection(typed))]
+    menu: Vec<Handle<AudioSample>>,
+    #[asset(
+        paths("audio/music/smnbl-rush-through-the-field.ogg"),
+        collection(typed)
+    )]
+    explore: Vec<Handle<AudioSample>>,
+    #[asset(paths("audio/music/smnbl-trouble.ogg"), collection(typed))]
+    combat: Vec<Handle<AudioSample>>,
 }
 
-#[derive(Asset, Clone, Reflect, Resource)]
-#[reflect(Resource)]
+/// Playback-ready audio with never-repeating selection; built from [`AudioHandles`] after load.
+#[derive(Resource)]
 pub struct AudioSources {
     // SFX
-    #[dependency]
     pub hover: Handle<AudioSample>,
-    #[dependency]
     pub press: Handle<AudioSample>,
-    #[dependency]
     pub steps: ShuffleBag<Handle<AudioSample>>,
-
     // music
-    #[dependency]
     pub menu: ShuffleBag<Handle<AudioSample>>,
-    #[dependency]
     pub explore: ShuffleBag<Handle<AudioSample>>,
-    #[dependency]
     pub combat: ShuffleBag<Handle<AudioSample>>,
-}
-
-impl AudioSources {
-    pub const BTN_HOVER: &'static str = "audio/sfx/btn-hover.ogg";
-    pub const BTN_PRESS: &'static str = "audio/sfx/btn-press.ogg";
-
-    pub const STEPS: &[&'static str] = &[
-        "audio/sfx/step.ogg",
-        "audio/sfx/step1.ogg",
-        "audio/sfx/step2.ogg",
-        "audio/sfx/step3.ogg",
-        "audio/sfx/step4.ogg",
-    ];
-    pub const MENU: &[&'static str] = &["audio/music/smnbl-green-embrace.ogg"];
-    pub const EXPLORE: &[&'static str] = &["audio/music/smnbl-rush-through-the-field.ogg"];
-    pub const COMBAT: &[&'static str] = &["audio/music/smnbl-trouble.ogg"];
 }
 
 impl FromWorld for AudioSources {
     fn from_world(world: &mut World) -> Self {
+        let handles = world.resource::<AudioHandles>();
         let mut rng = rand::rng();
-        let a = world.resource::<AssetServer>();
-
-        let steps = Self::STEPS.iter().map(|p| a.load(*p)).collect::<Vec<_>>();
-        let explore = Self::EXPLORE.iter().map(|p| a.load(*p)).collect::<Vec<_>>();
-        let combat = Self::COMBAT.iter().map(|p| a.load(*p)).collect::<Vec<_>>();
-        let menu = Self::MENU.iter().map(|p| a.load(*p)).collect::<Vec<_>>();
-
+        // Empty only if a `paths(...)` list above is emptied; fall back to a silent default handle.
+        let mut bag = |tracks: &Vec<Handle<AudioSample>>| {
+            let tracks = if tracks.is_empty() {
+                error!("empty audio collection in AudioHandles, using default handle");
+                vec![Handle::default()]
+            } else {
+                tracks.clone()
+            };
+            ShuffleBag::try_new(tracks, &mut rng).expect("audio bag is non-empty")
+        };
         Self {
-            menu: ShuffleBag::try_new(menu, &mut rng).unwrap(),
-            steps: ShuffleBag::try_new(steps, &mut rng).unwrap(),
-            combat: ShuffleBag::try_new(combat, &mut rng).unwrap(),
-            explore: ShuffleBag::try_new(explore, &mut rng).unwrap(),
-            hover: a.load(Self::BTN_HOVER),
-            press: a.load(Self::BTN_PRESS),
+            hover: handles.hover.clone(),
+            press: handles.press.clone(),
+            steps: bag(&handles.steps),
+            menu: bag(&handles.menu),
+            explore: bag(&handles.explore),
+            combat: bag(&handles.combat),
         }
     }
 }
 
-#[derive(Resource, Asset, Clone, TypePath)]
+/// Particles attached during level spawn and by the player controller.
+#[derive(AssetCollection, Resource, Clone)]
 pub struct Particles {
-    #[dependency]
+    #[asset(path = "particles/sun-floor.ron")]
     pub sun_floor: Handle<ParticlesAsset>,
-    #[dependency]
+    #[asset(path = "particles/healing-zone.ron")]
     pub healing_zone: Handle<ParticlesAsset>,
-    #[dependency]
+    #[asset(path = "particles/wind-spin.ron")]
     pub wind_spin: Handle<ParticlesAsset>,
 }
 
-impl FromWorld for Particles {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.resource::<AssetServer>();
-
-        Self {
-            sun_floor: assets.load("particles/sun-floor.ron"),
-            healing_zone: assets.load("particles/healing-zone.ron"),
-            wind_spin: assets.load("particles/wind-spin.ron"),
-        }
-    }
-}
-
-/// A [`Resource`] that contains all the assets needed to spawn the level.
-/// We use this to preload assets before the level is spawned.
+/// Preloaded so the shader-compilation screen has something to compile.
 #[allow(dead_code)]
-#[derive(Resource, Asset, Clone, TypePath)]
+#[derive(AssetCollection, Resource, Clone)]
 pub(crate) struct ShaderAssets {
-    #[dependency]
+    #[asset(path = "shaders/alpha_pattern.wgsl")]
     alpha_pattern: Handle<Shader>,
-    #[dependency]
+    #[asset(path = "shaders/cosmic_v2.wgsl")]
     cosmic_sphere: Handle<Shader>,
-}
-
-impl FromWorld for ShaderAssets {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.resource::<AssetServer>();
-
-        Self {
-            alpha_pattern: assets.load("shaders/alpha_pattern.wgsl"),
-            cosmic_sphere: assets.load("shaders/cosmic_sphere.wgsl"),
-        }
-    }
 }
 
 // #[derive(Asset, Clone, Reflect, Resource)]

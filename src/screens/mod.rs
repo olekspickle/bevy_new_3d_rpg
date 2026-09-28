@@ -1,5 +1,5 @@
 //! The game's main screen states and transitions between them.
-use crate::asset_loading::{AudioSources, ResourceHandles, Textures};
+use crate::asset_loading::{AudioSources, Textures};
 use crate::game::{ToggleMute, TogglePause};
 use crate::markers;
 use crate::shared::{AppSystems, Config, GameState, Settings};

@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![recursion_limit = "256"]

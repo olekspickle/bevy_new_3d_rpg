@@ -1,6 +1,6 @@
 # {{project-name | title_case}}
 
-This game project was generated using the [Bevy New Third Person](https://github.com/olekspickle/bevy_new_3d_rpg) template.
+This game project was generated using the [Bevy New 3D RPG](https://github.com/olekspickle/bevy_new_3d_rpg) template.
 
 ## Write your game
 
@@ -11,9 +11,10 @@ This template comes with a basic project structure that you may find useful:
 | ----------------------------------------------------- | --------------------------------------------------------------------- |
 | [`assets`](./assets)                                  | Asset directory                                                       |
 | [`src/main.rs`](./src/main.rs)                        | App entrypoint where system plugins and window set up                 |
-| [`src/asset_loading`](./src/asset_loading)            | A high-level way to load collections of asset handles as resources    |
-| [`src/models`](./src/models)                          | Data source for the game: inputs, markers, timers                     |
+| [`src/asset_loading`](./src/asset_loading)            | Asset collections loaded via [bevy_asset_loader]                      |
+| [`src/shared`](./src/shared)                          | Shared data: config, settings, game state, inputs, markers, timers    |
 | [`src/audio`](./src/audio)                            | Marker components for sound effects and music, bus setup              |
+| [`src/camera`](./src/camera)                          | Camera setup for third person, top down and FPV modes                 |
 | [`src/scene`](./src/scene)                            | Scene setup, skybox                                                   |
 | [`src/player`](./src/player)                          | Player control & animation                                            |
 | [`src/game`](./src/game)                              | Game mechanics & content                                              |
@@ -70,7 +71,7 @@ Check the [release-flow](.github/workflows/release.yaml)
 
 ## Credits
 
-The [assets](./assets) in this repository are all 3rd-party. See the see [credits](assets/credits.json) for more information.
+The [assets](./assets) in this repository are all 3rd-party. See the see [credits](assets/credits.ron) for more information.
 
 ## License
 
@@ -89,7 +90,7 @@ The source code in this repository is licensed under any of the following at you
 [bevy_seedling]: https://github.com/CorvusPrudens/bevy_seedling
 [bevy_third_person_camera]: https://github.com/The-DevBlog/bevy_third_person_camera
 [bevy_top_down_camera]: https://github.com/olekspickle/bevy_top_down_camera
-[bevy_tnua]: https://github.com/idanarye/bevy-tnua
+[bevy_ahoy]: https://github.com/janhohenheim/bevy_ahoy
 [Bevy Cheat Book]: https://bevy-cheatbook.github.io/introduction.html
 [BevyFlock]: https://github.com/TheBevyFlock/bevy_new_2d
 [bevy_enhanced_input]: https://github.com/projectharmonia/bevy_enhanced_input

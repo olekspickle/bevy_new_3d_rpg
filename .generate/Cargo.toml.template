@@ -9,64 +9,58 @@ repository = "https://github.com/{{authors}}/{{project-name}}"
 keywords = ["bevy", "game", "third person", "topdown", "gamedev"]
 
 [dependencies.bevy]
-version = "0.18"
+version = "0.19"
 default-features = false
 features = [
-    # TODO: change to this on 0.19 (thx Jan!)
-    # "3d",
-    # "jpeg",
-    # "serialize",
-    # "hotpatching",
-    # "reflect_auto_register",
     # opinionated list without bevy_audio
-    "default_app",
-    "default_platform",
-    "3d_api",
-    "3d_bevy_render",
-    "ui_api",
-    "ui_bevy_render",
+    "bevy_settings",
+    "3d",
+    "ui",
     "scene",
-    "picking",
-    "jpeg",
     "serialize",
-    "hotpatching",
-    "reflect_auto_register",
-    "experimental_bevy_ui_widgets"
+    # "hotpatching",
+    "jpeg",
+    "bevy_feathers",
+    "bevy_material"
 ]
 
 [dependencies]
-bevy_fix_cursor_unlock_web = "0.3"
-bevy_perf_ui = { version = "0.6", optional = true }                     # performance UI
-bevy-inspector-egui = { version = "0.36", optional = true }             # entity inspector
-bevy_skein = "0.5"                                                      # blender integration
+# bevy_fix_cursor_unlock_web = "0.3"
+bevy_asset_loader = "0.27.0"
+bevy_perf_ui = { version = "0.7", optional = true }                     # performance UI
+bevy-inspector-egui = { version = "0.37", optional = true }             # entity inspector
+bevy_skein = "0.6"                                                      # blender integration
+bevy_rand = { version = "0.15", features = ["wyrand"] }
+bevy_prng = { version = "0.15", features = ["wyrand"] }
 
 bevy_third_person_camera = { version = "0.4", optional = true }         # 3rd person camera
-bevy_top_down_camera = { version = "0.3", optional = true }             # top down camera
+bevy_top_down_camera = { version = "0.4", optional = true }             # top down camera
 
-avian3d = { version = "0.6.0-rc.1", default-features = false, features = ["parry-f32", "3d", "f32"] }
-bevy_sprinkles = "0.2.0"                                                # 3d particles
-bevy_ahoy =   { version = "0.1.0-rc.6", default-features = false }      # character controller
-bevy_enhanced_input = { version = "0.24", features = ["serialize"] }    # keyboard/gamepad input
+bevy_sprinkles = "0.3.0"                                                # 3d particles
+avian3d = { version = "0.7", default-features = false, features = ["parry-f32", "3d", "f32", "collider-from-mesh"] }
+bevy_ahoy =   { version = "0.2", default-features = false }             # character controller
+bevy_enhanced_input = { version = "0.26", features = ["serialize"] }    # keyboard/gamepad input
 
-bevy_shuffle_bag = "0.4"                                                # deterministically random container
-bevy_seedling = { version = "0.7", features = ["hrtf"] }                # audio plugin using firewheel
-firewheel = "0.10"
+bevy_shuffle_bag = "0.6"                                                # deterministically random container
+bevy_seedling = { version = "0.8", features = ["hrtf"] }                # audio plugin using firewheel
+firewheel = "0.12"
 
 # dialogue
-bevy_yarnspinner = "0.7"
+bevy_yarnspinner = "0.9"
 
 # to play with
 # bevy_open_vat
 # bevy_wind_waker_shader
-
+# bevy_map_scatter
 
 # misc
 easy-ext = "1"
 fundsp = "0.20"
 image = "0.25.6"
 ron = "0.10"
-rand = "0.9"
+rand = "0.10"
 serde = "1"
+strum = { version = "0.27", features = ["derive"] }
 thiserror = "2"
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.30", default-features = false }
@@ -85,6 +79,7 @@ third_person = ["bevy_third_person_camera"]
 native = [ "enhanced" ]
 web = [ "bevy/webgpu", "bevy_seedling/web_audio", "third_person" ]
 dev = [
+    "bevy/debug",
     "bevy_perf_ui",
     "bevy/bevy_dev_tools",
     "bevy-inspector-egui",
@@ -124,7 +119,7 @@ collapsible_if = "allow"           # Queries may access many components, which w
 nonstandard_macro_braces = "warn"   # Make sure macros use their standard braces, such as `[]` for `bevy_ecs::children!`.
 
 [patch.crates-io]
-bevy_ahoy = { git = "https://github.com/janhohenheim/bevy_ahoy" }
+bevy_seedling = { git = "https://github.com/CorvusPrudens/bevy_seedling", branch = "master" }
 bevy_perf_ui = { git = "https://github.com/olekspickle/perf_ui" }
-bevy_sprinkles = { git = "https://github.com/olekspickle/sprinkles" }
+bevy_third_person_camera = { git = "https://github.com/olekspickle/bevy_third_person_camera" }
 

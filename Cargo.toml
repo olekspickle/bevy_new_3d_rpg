@@ -27,6 +27,7 @@ features = [
 
 [dependencies]
 # bevy_fix_cursor_unlock_web = "0.3"
+bevy_asset_loader = "0.27.0"
 bevy_perf_ui = { version = "0.7", optional = true }                     # performance UI
 bevy-inspector-egui = { version = "0.37", optional = true }             # entity inspector
 bevy_skein = "0.6"                                                      # blender integration

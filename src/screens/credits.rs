@@ -1,6 +1,6 @@
 //! A credits screen that can be accessed from the main menu
 use super::*;
-use crate::asset_loading::{LoadResource, ron::RonLoadPlugin};
+use crate::asset_loading::ron::RonLoadPlugin;
 use bevy::ecs::{lifecycle::HookContext, spawn::SpawnIter, world::DeferredWorld};
 use bevy_enhanced_input::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -12,13 +12,36 @@ const SPEED_UP_FACTOR: f32 = 4.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(RonLoadPlugin::<CreditsPreset>::default())
-        .load_resource_from_path::<CreditsPreset>("credits.ron")
         .add_input_context::<CreditsInput>()
         .add_systems(
             OnEnter(Screen::Credits),
             (start_credits_music, spawn_credits_screen),
         )
         .add_systems(Update, roll_the_credits.run_if(in_state(Screen::Credits)));
+
+    // Not gated by the boot loading state; synced into a resource whenever it (re)loads.
+    let handle: Handle<CreditsPreset> = app
+        .world_mut()
+        .resource_mut::<AssetServer>()
+        .load("credits.ron");
+    app.insert_resource(CreditsHandle(handle)).add_systems(
+        Update,
+        sync_credits.run_if(resource_changed::<Assets<CreditsPreset>>),
+    );
+}
+
+/// Keeps the `credits.ron` handle alive so the asset is not unloaded.
+#[derive(Resource)]
+struct CreditsHandle(Handle<CreditsPreset>);
+
+fn sync_credits(
+    handle: Res<CreditsHandle>,
+    assets: Res<Assets<CreditsPreset>>,
+    mut commands: Commands,
+) {
+    if let Some(credits) = assets.get(&handle.0) {
+        commands.insert_resource(credits.clone());
+    }
 }
 
 markers!(CreditsRoot, CreditsBackBtn);

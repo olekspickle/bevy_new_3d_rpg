@@ -124,7 +124,7 @@ Check the [release-flow](.github/workflows/release.yaml)
 ## Credits
 
 The [assets](./assets) in this repository are all either by me or CC0 3rd-party.
-See the [credits](assets/credits.json) for more information.
+See the [credits](assets/credits.ron) for more information.
 
 ## License
 
