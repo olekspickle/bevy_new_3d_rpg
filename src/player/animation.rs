@@ -27,12 +27,16 @@ pub fn plugin(app: &mut App) {
     );
 }
 
+/// Bone used as the spawn point for spell projectiles (see [`SpellShootFrame`]).
+const HAND_BONE: &str = "DEF-handL";
+
 /// Build animation graph when scene loads
 pub fn prepare_animations(
     on: On<WorldInstanceReady>,
     models: Res<Models>,
     gltfs: Res<Assets<Gltf>>,
     children_q: Query<&Children>,
+    name_q: Query<&Name>,
     animation_player_q: Query<Entity, With<AnimationPlayer>>,
     mut animation_players: Query<&mut AnimationPlayer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
@@ -42,6 +46,7 @@ pub fn prepare_animations(
     let Some(animation_player_e) = on.entity.get_recursive(children_q, animation_player_q) else {
         return;
     };
+    let hand = on.entity.get_by_name(children_q, name_q, HAND_BONE);
     let Ok(mut animation_player) = animation_players.get_mut(animation_player_e) else {
         return;
     };
@@ -60,6 +65,9 @@ pub fn prepare_animations(
         gltf.named_animations["Crouch_Fwd_Loop"].clone(),
         gltf.named_animations["Crouch_Idle_Loop"].clone(),
         gltf.named_animations["Roll"].clone(),
+        gltf.named_animations["Spell_Simple_Enter"].clone(),
+        gltf.named_animations["Spell_Simple_Exit"].clone(),
+        gltf.named_animations["Spell_Simple_Shoot"].clone(),
     ];
 
     let (graph, nodes) = AnimationGraph::from_clips(clips);
@@ -82,6 +90,13 @@ pub fn prepare_animations(
             nodes,
             animation_player_e,
         };
+        if let Some(hand) = hand {
+            player.hand = hand;
+        } else {
+            warn!(
+                "could not find bone \"{HAND_BONE}\" on player model; spell casting will not spawn a projectile"
+            );
+        }
     }
 }
 
@@ -184,11 +199,12 @@ pub fn calcucate_animations(
 }
 
 pub fn animate(
-    mut players: Query<&mut Player>,
+    mut commands: Commands,
+    mut players: Query<(Entity, &mut Player)>,
     mut animation_players: Query<&mut AnimationPlayer>,
     mut transitions_query: Query<&mut AnimationTransitions>,
 ) {
-    for mut player in players.iter_mut() {
+    for (entity, mut player) in players.iter_mut() {
         let ani = &mut player.animation;
         let Ok(mut animation_player) = animation_players.get_mut(ani.animation_player_e) else {
             continue;
@@ -219,6 +235,10 @@ pub fn animate(
                 animation_player.animation_mut(node).map(|a| a.repeat());
             }
 
+            if next == AnimationState::SpellShoot {
+                commands.entity(entity).trigger(SpellShootFrame);
+            }
+
             // Set speed on the NEW animation, not the old one
             let next_node = ani.nodes[next.idx()];
             if let Some(active) = animation_player.animation_mut(next_node) {
@@ -243,6 +263,9 @@ pub fn animate(
                 let chained = match ani.current {
                     AnimationState::Jump => Some(AnimationState::JumpLoop),
                     AnimationState::Land => Some(AnimationState::StandIdle),
+                    AnimationState::SpellEnter => Some(AnimationState::SpellShoot),
+                    AnimationState::SpellShoot => Some(AnimationState::SpellExit),
+                    AnimationState::SpellExit => Some(AnimationState::StandIdle),
                     _ => None,
                 };
 
@@ -342,7 +365,18 @@ impl Animations {
     pub fn end_jump(&mut self) {
         self.request(AnimationState::Land);
     }
+
+    /// Starts the Enter→Shoot→Exit cast sequence; `animate` chains the rest and fires
+    /// [`SpellShootFrame`] the instant the Shoot node begins.
+    pub fn cast_spell(&mut self) {
+        self.request(AnimationState::SpellEnter);
+    }
 }
+
+/// Fired on the player entity the instant the `Spell_Simple_Shoot` animation node starts
+/// playing, so the projectile spawn (see `player::spell`) is synced to the cast animation.
+#[derive(EntityEvent)]
+pub struct SpellShootFrame(pub Entity);
 
 /// The order is important here because we use it as indexes for animation node vec
 #[derive(Component, Default, Reflect, Clone, Copy, PartialEq, Debug)]
@@ -358,6 +392,9 @@ pub enum AnimationState {
     Crouch(f32),
     CrouchIdle,
     Dash,
+    SpellEnter,
+    SpellExit,
+    SpellShoot,
 }
 impl AnimationState {
     pub fn idx(&self) -> usize {
@@ -371,6 +408,9 @@ impl AnimationState {
             AnimationState::Crouch(_) => 6,
             AnimationState::CrouchIdle => 7,
             AnimationState::Dash => 8,
+            AnimationState::SpellEnter => 9,
+            AnimationState::SpellExit => 10,
+            AnimationState::SpellShoot => 11,
         }
     }
 
@@ -378,7 +418,12 @@ impl AnimationState {
     pub fn is_locked(&self) -> bool {
         matches!(
             self,
-            AnimationState::Jump | AnimationState::Land | AnimationState::Dash
+            AnimationState::Jump
+                | AnimationState::Land
+                | AnimationState::Dash
+                | AnimationState::SpellEnter
+                | AnimationState::SpellExit
+                | AnimationState::SpellShoot
         )
     }
     pub fn can_crouch(&self) -> bool {
@@ -388,6 +433,9 @@ impl AnimationState {
                 | AnimationState::JumpLoop
                 | AnimationState::Land
                 | AnimationState::Dash
+                | AnimationState::SpellEnter
+                | AnimationState::SpellExit
+                | AnimationState::SpellShoot
         )
     }
     pub fn is_running(&self) -> bool {
@@ -429,6 +477,9 @@ mod animation_state_tests {
         AnimationState::Crouch(1.0),
         AnimationState::CrouchIdle,
         AnimationState::Dash,
+        AnimationState::SpellEnter,
+        AnimationState::SpellExit,
+        AnimationState::SpellShoot,
     ];
 
     #[test]

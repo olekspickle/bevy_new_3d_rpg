@@ -8,7 +8,7 @@ pub fn plugin(app: &mut App) {
         (
             bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
             bevy::diagnostic::EntityCountDiagnosticsPlugin::default(),
-            bevy::diagnostic::SystemInformationDiagnosticsPlugin,
+            // bevy::diagnostic::SystemInformationDiagnosticsPlugin,
             bevy::render::diagnostic::RenderDiagnosticsPlugin,
         ),
     ));

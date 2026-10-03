@@ -19,6 +19,10 @@ pub struct Sprint;
 #[action_output(bool)]
 pub struct Dash;
 
+#[derive(InputAction)]
+#[action_output(bool)]
+pub struct CastSpell;
+
 #[derive(Component, Default)]
 #[component(on_add = PlayerInput::on_add)]
 pub(crate) struct PlayerInput;
@@ -65,6 +69,10 @@ impl PlayerInput {
                 (
                     Action::<Dash>::new(),
                     bindings![keys.dash[0], keys.dash[1], keys.dash[2], GamepadButton::LeftTrigger],
+                ),
+                (
+                    Action::<CastSpell>::new(),
+                    bindings![MouseButton::Left, GamepadButton::RightTrigger2],
                 ),
                 // (
                 //     Action::<Attack>::new(),

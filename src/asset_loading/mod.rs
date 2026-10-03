@@ -69,7 +69,7 @@ pub struct Textures {
 pub struct Models {
     #[asset(path = "models/player.glb")]
     pub player: Handle<Gltf>,
-    #[asset(path = "models/scene2.gltf")]
+    #[asset(path = "models/scene.gltf")]
     pub entry_scene: Handle<Gltf>,
 }
 

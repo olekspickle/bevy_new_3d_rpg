@@ -135,6 +135,29 @@ impl Entity {
 
         None
     }
+
+    /// Same as [`get_recursive`](Self::get_recursive) but matches by exact [`Name`], for
+    /// finding a specific glTF-imported bone/node that has no distinguishing component.
+    pub fn get_by_name(
+        &self,
+        children_q: Query<&Children>,
+        name_q: Query<&Name>,
+        target: &str,
+    ) -> Option<Entity> {
+        if name_q.get(*self).is_ok_and(|name| name.as_str() == target) {
+            return Some(*self);
+        }
+
+        if let Ok(children) = children_q.get(*self) {
+            for child in children.iter() {
+                if let Some(e) = child.get_by_name(children_q, name_q, target) {
+                    return Some(e);
+                }
+            }
+        }
+
+        None
+    }
 }
 
 #[ext(AnimationPlayerExt)]

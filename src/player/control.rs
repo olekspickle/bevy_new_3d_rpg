@@ -1,6 +1,10 @@
 use super::*;
 use bevy_ahoy::CharacterLook;
 
+/// Falling past this height (e.g. through a hole in the level) teleports the player back
+/// to the configured spawn point instead of leaving them to fall forever.
+const FALL_RESPAWN_Y: f32 = -100.0;
+
 pub fn plugin(app: &mut App) {
     app.add_systems(
         FixedUpdate,
@@ -10,9 +14,11 @@ pub fn plugin(app: &mut App) {
     )
     .add_systems(
         Update,
-        tick_jump_timer
-            .run_if(in_state(Screen::Gameplay))
-            .in_set(AppSystems::TickTimers),
+        (
+            tick_jump_timer.in_set(AppSystems::TickTimers),
+            respawn_if_fallen.in_set(AppSystems::Update),
+        )
+            .run_if(in_state(Screen::Gameplay)),
     )
     .add_observer(handle_sprint_in)
     .add_observer(handle_sprint_out)
@@ -142,6 +148,26 @@ fn handle_land(on: On<PlayerLanded>, mut player_q: Query<&mut JumpTimer, With<Pl
 fn tick_jump_timer(time: Res<Time>, mut timers: Query<&mut JumpTimer, With<Player>>) {
     for mut timer in timers.iter_mut() {
         timer.tick(time.delta());
+    }
+}
+
+fn respawn_if_fallen(
+    cfg: Res<Config>,
+    mut player_q: Query<
+        (
+            &mut Transform,
+            &mut LinearVelocity,
+            &mut CharacterControllerState,
+        ),
+        With<Player>,
+    >,
+) {
+    for (mut transform, mut velocity, mut state) in &mut player_q {
+        if transform.translation.y < FALL_RESPAWN_Y {
+            transform.translation = Vec3::from(cfg.player.spawn_pos);
+            *velocity = LinearVelocity(Vec3::ZERO);
+            *state = CharacterControllerState::default();
+        }
     }
 }
 

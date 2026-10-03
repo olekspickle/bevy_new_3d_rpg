@@ -22,6 +22,7 @@ mod control;
 mod input;
 mod particles;
 mod sound;
+mod spell;
 
 pub use animation::*;
 pub use control::*;
@@ -42,6 +43,7 @@ pub fn plugin(app: &mut App) {
         animation::plugin,
         input::plugin,
         particles::plugin,
+        spell::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), spawn_player)
     .add_observer(player_post_spawn);
@@ -153,6 +155,8 @@ pub struct Player {
     /// Used for time based effects, like slide dust or magic attacks
     pub last_input_change: Instant,
     pub animation: Animations,
+    /// Right-hand bone, set once the model loads; spell projectiles spawn from here.
+    pub hand: Entity,
 }
 
 /// FIXME: hack because we spawn player entity with complex child hierarchy
@@ -168,6 +172,7 @@ impl Default for Player {
             id: PLACEHOLDER_ENTITY,
             animation: Animations::default(),
             last_input_change: Instant::now(),
+            hand: PLACEHOLDER_ENTITY,
         }
     }
 }
