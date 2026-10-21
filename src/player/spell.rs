@@ -1,6 +1,6 @@
-//! Casts a simple magic bolt: `CastSpell` plays the Enter→Shoot→Exit animation sequence, and
-//! the instant the Shoot node starts (see [`SpellShootFrame`]) a `CosmicSphere`-shaded
-//! projectile launches from the player's hand bone along the camera's forward direction.
+//! Casts a simple magic bolt: `CastSpell` plays the Enter→Shoot→Exit animation sequence (Shoot
+//! repeats while held), and each time the Shoot node starts (see [`SpellShootFrame`]) a
+//! `CosmicSphere`-shaded projectile launches from the player's hand bone along the camera's forward.
 use super::*;
 use crate::scene::{
     CosmicSphere, CosmicSphereExtension, CosmicSphereMaterial, CosmicSphereUniforms,
@@ -8,14 +8,20 @@ use crate::scene::{
 use bevy::material::OpaqueRendererMethod;
 
 mod knobs {
-    pub const PROJECTILE_SPEED: f32 = 40.0;
+    use bevy::prelude::Color;
+
+    pub const PROJECTILE_SPEED: f32 = 20.0;
     pub const PROJECTILE_START_RADIUS: f32 = 0.3;
-    pub const PROJECTILE_LIFETIME_SECS: f32 = 3.0;
+    pub const PROJECTILE_LIFETIME_SECS: f32 = 6.0;
+    pub const LIGHT_COLOR: Color = Color::srgb(0.6, 0.4, 1.0);
+    pub const LIGHT_INTENSITY: f32 = 200_000.0;
+    pub const LIGHT_RANGE: f32 = 10.0;
     pub const FACING_TURN_RATE: f32 = 0.2;
 }
 
 pub fn plugin(app: &mut App) {
     app.add_observer(handle_cast_spell)
+        .add_observer(handle_stop_casting)
         .add_observer(spawn_spell_projectile)
         .add_systems(
             Update,
@@ -35,15 +41,22 @@ fn handle_cast_spell(
 ) -> Result {
     let mut player = player_q.get_mut(on.context)?;
     player.animation.cast_spell();
+    face_camera(on.context, &camera, &mut commands);
+    Ok(())
+}
 
+fn handle_stop_casting(on: On<Complete<CastSpell>>, mut player_q: Query<&mut Player>) -> Result {
+    player_q.get_mut(on.context)?.animation.stop_casting();
+    Ok(())
+}
+
+fn face_camera(player: Entity, camera: &Transform, commands: &mut Commands) {
     let forward = camera.forward();
     let direction = Vec3::new(forward.x, 0.0, forward.z).normalize_or_zero();
     if direction != Vec3::ZERO {
         let target = Quat::from_rotation_y(direction.x.atan2(direction.z));
-        commands.entity(on.context).insert(FacingTarget(target));
+        commands.entity(player).insert(FacingTarget(target));
     }
-
-    Ok(())
 }
 
 fn face_shot_direction(
@@ -77,6 +90,8 @@ fn spawn_spell_projectile(
     let player = players.get(on.event_target())?;
     let origin = transforms.get(player.hand)?.translation();
     let direction = *camera.forward();
+    // re-aim each shot of a held cast
+    face_camera(on.event_target(), &camera, &mut commands);
 
     let material = materials.add(CosmicSphereMaterial {
         base: StandardMaterial {
@@ -97,6 +112,14 @@ fn spawn_spell_projectile(
         Mesh3d(meshes.add(Sphere::new(knobs::PROJECTILE_START_RADIUS))),
         MeshMaterial3d(material),
         Transform::from_translation(origin),
+        // no shadows: held casts spawn many of these
+        PointLight {
+            color: knobs::LIGHT_COLOR,
+            intensity: knobs::LIGHT_INTENSITY,
+            range: knobs::LIGHT_RANGE,
+            shadow_maps_enabled: false,
+            ..default()
+        },
         SpellProjectile {
             velocity: direction * knobs::PROJECTILE_SPEED,
         },

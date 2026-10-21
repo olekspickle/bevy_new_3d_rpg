@@ -1,6 +1,6 @@
 use crate::asset_loading::AudioSources;
 use crate::camera::ToggleCamCursor;
-use crate::game::{ToggleDebugUi, TogglePause};
+use crate::game::{SetInspectorEnabled, SetInspectorOwnWindow, ToggleDebugUi, TogglePause};
 use crate::markers;
 use crate::scene::SunCycle;
 use crate::screens::{Escape, GoTo, Screen};

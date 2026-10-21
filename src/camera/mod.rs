@@ -3,7 +3,6 @@ use crate::screens::Screen;
 use crate::shared::Config;
 #[cfg(feature = "third_person")]
 use crate::third_party::ThirdPersonCamera;
-use bevy::prelude::*;
 #[cfg(not(feature = "third_person"))]
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 #[cfg(feature = "native")]
@@ -13,6 +12,7 @@ use bevy::{
     core_pipeline::tonemapping::Tonemapping,
     light::ShadowFilteringMethod,
     post_process::bloom::Bloom,
+    prelude::*,
 };
 
 // mod gamepad_cursor;

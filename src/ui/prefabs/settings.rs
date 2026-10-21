@@ -1,7 +1,7 @@
 use super::*;
 #[cfg(feature = "dev")]
 use bevy::ui::Display as NodeDisplay;
-use bevy::ui_widgets::ValueChange;
+use bevy::ui_widgets::{ScrollArea, ValueChange};
 use bevy::window::{PresentMode, PrimaryWindow};
 use bevy_enhanced_input::prelude::Start;
 
@@ -74,6 +74,7 @@ pub fn save_settings(
 fn update_tab_content(
     settings: If<Res<Settings>>,
     cfg: If<Res<Config>>,
+    state: Res<GameState>,
     active_tab: Res<ActiveTab>,
     tab_bar: Query<&Children, With<TabBar>>,
     mut tab_content: Query<(Entity, &Children), With<TabContent>>,
@@ -98,7 +99,7 @@ fn update_tab_content(
                         }
                         UiTab::Video => {
                             commands
-                                .spawn(video_grid(&settings, &cfg))
+                                .spawn(video_grid(&settings, &cfg, &state))
                                 .insert(ChildOf(e));
                         }
                         UiTab::Keybindings => {
@@ -258,6 +259,16 @@ fn debug_ui_changed(
     commands.trigger(ToggleDebugUi);
 }
 
+#[cfg(feature = "dev")]
+fn inspector_enabled_changed(value_change: On<ValueChange<bool>>, mut commands: Commands) {
+    commands.trigger(SetInspectorEnabled(value_change.value));
+}
+
+#[cfg(feature = "dev")]
+fn inspector_own_window_changed(value_change: On<ValueChange<bool>>, mut commands: Commands) {
+    commands.trigger(SetInspectorOwnWindow(value_change.value));
+}
+
 fn click_toggle_sun_cycle(
     _: On<Pointer<Click>>,
     children: Query<&Children>,
@@ -311,7 +322,12 @@ pub fn settings_ui(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
                 tab_bar(),
                 (
                     TabContent,
-                    Node::default(),
+                    ScrollArea,
+                    Node {
+                        max_height: Percent(70.0),
+                        overflow: Overflow::scroll_y(),
+                        ..default()
+                    },
                     children![audio_grid(settings, cfg)]
                 ),
                 bottom_row()
@@ -377,7 +393,8 @@ fn bottom_row() -> impl Bundle {
     )
 }
 
-fn video_grid(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
+#[cfg_attr(not(feature = "dev"), allow(unused_variables))]
+fn video_grid(settings: &Settings, cfg: &Config, state: &GameState) -> impl Bundle + use<> {
     let fov_range = cfg.settings.min_fov..=cfg.settings.max_fov;
     let fov_step = cfg.settings.step.to_degrees();
     (
@@ -386,7 +403,7 @@ fn video_grid(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
             row_gap: Px(10.0),
             column_gap: Px(30.0),
             display: Display::Grid,
-            grid_template_columns: RepeatedGridTrack::vw(4, 20.0),
+            grid_template_columns: RepeatedGridTrack::vw(2, 20.0),
             justify_items: JustifyItems::Center,
             align_items: AlignItems::Center,
             ..default()
@@ -418,6 +435,10 @@ fn video_grid(settings: &Settings, cfg: &Config) -> impl Bundle + use<> {
             widget::checkbox(true, diagnostics_changed),
             widget::label("debug ui"),
             widget::checkbox(false, debug_ui_changed),
+            widget::label("inspector"),
+            widget::checkbox(state.inspector_enabled, inspector_enabled_changed),
+            widget::label("inspector own window"),
+            widget::checkbox(state.inspector_own_window, inspector_own_window_changed),
         ],
     )
 }

@@ -13,9 +13,10 @@ use crate::ui::modal::{ModalInput, ModalRoot};
 use avian3d::prelude::*;
 use bevy::platform::time::Instant;
 use bevy::prelude::*;
-use bevy_ahoy::{CharacterLook, prelude::*};
+use bevy_ahoy::{CharacterLook, DashState, WallRunState, prelude::*};
 use bevy_enhanced_input::prelude::*;
 use bevy_seedling::prelude::*;
+use std::time::Duration;
 
 mod animation;
 mod control;
@@ -23,6 +24,7 @@ mod input;
 mod particles;
 mod sound;
 mod spell;
+mod wall_touch;
 
 pub use animation::*;
 pub use control::*;
@@ -44,6 +46,7 @@ pub fn plugin(app: &mut App) {
         input::plugin,
         particles::plugin,
         spell::plugin,
+        wall_touch::plugin,
     ))
     .add_systems(OnEnter(Screen::Gameplay), spawn_player)
     .add_observer(player_post_spawn);
@@ -82,6 +85,21 @@ pub fn spawn_player(
                 max_speed: cfg.player.movement.max_speed,
                 crouch_speed_scale: cfg.player.movement.crouch_factor,
                 jump_height: cfg.player.movement.jump_height,
+                ..default()
+            },
+            Dashing {
+                distance: cfg.player.movement.dash_distance,
+                ..default()
+            },
+            AirJumping {
+                count: cfg.player.movement.air_jumps,
+                ..default()
+            },
+            // ahoy caps wall runs by time, so derive it from distance at run speed
+            WallRunning {
+                max_duration: Duration::from_secs_f32(
+                    cfg.player.movement.wall_run_distance / cfg.player.movement.speed(),
+                ),
                 ..default()
             },
             collider,

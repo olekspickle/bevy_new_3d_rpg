@@ -8,7 +8,9 @@ pub fn plugin(app: &mut App) {
         (
             bevy::diagnostic::FrameTimeDiagnosticsPlugin::default(),
             bevy::diagnostic::EntityCountDiagnosticsPlugin::default(),
-            // bevy::diagnostic::SystemInformationDiagnosticsPlugin,
+            // no-op on wasm and with bevy/dynamic_linking, use `just sysinfo` to see CPU/RAM
+            #[cfg(not(target_arch = "wasm32"))]
+            bevy::diagnostic::SystemInformationDiagnosticsPlugin,
             bevy::render::diagnostic::RenderDiagnosticsPlugin,
         ),
     ));
@@ -23,5 +25,6 @@ fn setup_perf_ui(mut commands: Commands) {
             position: PerfUiPosition::TopRight,
             ..default()
         },
+        Pickable::IGNORE,
     ));
 }

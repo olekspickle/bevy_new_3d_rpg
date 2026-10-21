@@ -40,6 +40,11 @@ pub struct TogglePause(pub Entity);
 pub struct ToggleMute(pub Entity);
 #[derive(Event)]
 pub struct ToggleDebugUi;
+#[derive(Event)]
+pub struct SetInspectorEnabled(pub bool);
+/// Whether the egui world inspector draws in its own OS window or shares the main camera.
+#[derive(Event)]
+pub struct SetInspectorOwnWindow(pub bool);
 
 // ================== trigger events on input ========================
 fn pause(on: On<Start<Pause>>, mut commands: Commands) {

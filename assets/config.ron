@@ -13,11 +13,13 @@
         fov: 60,
         zoom: (1.5, 30),
         movement: (
-            max_speed: 100,
-            jump_height: 5.0,
+            max_speed: 70,
+            jump_height: 3.0,
             sprint_factor: 1.5,
             crouch_factor: 0.2,
             dash_distance: 10,
+            air_jumps: 10,
+            wall_run_distance: 20,
             idle_to_run_threshold: 0.001,
         ),
         hitbox:(

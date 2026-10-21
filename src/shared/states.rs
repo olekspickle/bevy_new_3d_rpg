@@ -13,6 +13,8 @@ pub struct GameState {
     pub debug_ui: bool,
     pub paused: bool,
     pub muted: bool,
+    pub inspector_enabled: bool,
+    pub inspector_own_window: bool,
 }
 
 impl Default for GameState {
@@ -23,6 +25,8 @@ impl Default for GameState {
             debug_ui: true,
             paused: false,
             muted: false,
+            inspector_enabled: false,
+            inspector_own_window: true,
         }
     }
 }

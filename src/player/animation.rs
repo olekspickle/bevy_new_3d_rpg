@@ -5,6 +5,7 @@
 //!
 //! Create a new animation graph for each player, start all animations with 0 weight and add weight
 //! exponentially between frames based on input
+use super::wall_touch::ArmBones;
 use super::*;
 use bevy::world_serialization::WorldInstanceReady;
 use std::time::Duration;
@@ -40,7 +41,7 @@ pub fn prepare_animations(
     animation_player_q: Query<Entity, With<AnimationPlayer>>,
     mut animation_players: Query<&mut AnimationPlayer>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
-    mut players: Query<&mut Player>,
+    mut players: Query<(Entity, &mut Player)>,
     mut commands: Commands,
 ) {
     let Some(animation_player_e) = on.entity.get_recursive(children_q, animation_player_q) else {
@@ -81,12 +82,18 @@ pub fn prepare_animations(
     let idle_node = nodes[0];
     animation_player.play(idle_node).repeat();
 
-    if let Ok(mut player) = players.single_mut() {
+    if let Ok((player_e, mut player)) = players.single_mut() {
+        if let Some(arms) = ArmBones::find(on.entity, children_q, name_q) {
+            commands.entity(player_e).insert(arms);
+        } else {
+            warn!("could not find arm bones on player model; wall run hand IK disabled");
+        }
         debug!("adding animations to player: {}", player.id);
         player.animation = Animations {
             // state: (AnimationState::StandIdle, AnimationState::StandIdle),
             current: AnimationState::StandIdle,
             requested: None,
+            casting: false,
             nodes,
             animation_player_e,
         };
@@ -107,6 +114,8 @@ pub fn calcucate_animations(
         Entity,
         &CharacterController,
         &CharacterControllerState,
+        &DashState,
+        &WallRunState,
         &Transform,
         &mut PreviousPosition,
         &mut Player,
@@ -115,7 +124,9 @@ pub fn calcucate_animations(
 ) {
     let idle_to_run_ani = cfg.player.movement.idle_to_run_threshold * 1000.0;
 
-    for (entity, ahoy, ahoy_state, pos, mut prev_pos, mut player) in players.iter_mut() {
+    for (entity, ahoy, ahoy_state, dash, wall_run, pos, mut prev_pos, mut player) in
+        players.iter_mut()
+    {
         let animation = &mut player.animation;
 
         let displacement = pos.translation - prev_pos.0;
@@ -133,6 +144,17 @@ pub fn calcucate_animations(
         // MANTLE
         if ahoy_state.mantle.is_some() {
             animation.request(AnimationState::Dash); // or Mantle
+            continue;
+        }
+
+        if dash.progress.is_some() {
+            animation.request(AnimationState::Dash);
+            continue;
+        }
+
+        // hand reaching for the wall is layered on top in `wall_touch`
+        if wall_run.progress.is_some() {
+            animation.request(AnimationState::JumpLoop);
             continue;
         }
 
@@ -183,7 +205,7 @@ pub fn calcucate_animations(
         }
 
         // SPRINT
-        let is_sprinting = ahoy.speed > cfg.player.movement.speed();
+        let is_sprinting = moving && ahoy.speed > cfg.player.movement.speed();
         if is_sprinting {
             animation.request(AnimationState::Sprint(ahoy.speed));
             continue;
@@ -246,7 +268,11 @@ pub fn animate(
                     AnimationState::Run(s)
                     | AnimationState::Sprint(s)
                     | AnimationState::Crouch(s) => active.set_speed(s * knobs::DAMPING),
-                    AnimationState::Land => active.set_speed(2.5),
+                    AnimationState::Land
+                    | AnimationState::Dash
+                    | AnimationState::SpellShoot
+                    | AnimationState::SpellEnter
+                    | AnimationState::SpellExit => active.set_speed(2.5),
                     _ => active.set_speed(1.0),
                 };
             }
@@ -262,9 +288,11 @@ pub fn animate(
             {
                 let chained = match ani.current {
                     AnimationState::Jump => Some(AnimationState::JumpLoop),
-                    AnimationState::Land => Some(AnimationState::StandIdle),
+                    AnimationState::Land | AnimationState::Dash => Some(AnimationState::StandIdle),
                     AnimationState::SpellEnter => Some(AnimationState::SpellShoot),
+                    AnimationState::SpellShoot if ani.casting => Some(AnimationState::SpellShoot),
                     AnimationState::SpellShoot => Some(AnimationState::SpellExit),
+                    AnimationState::SpellExit if ani.casting => Some(AnimationState::SpellEnter),
                     AnimationState::SpellExit => Some(AnimationState::StandIdle),
                     _ => None,
                 };
@@ -285,6 +313,8 @@ pub struct Animations {
     // pub state: (AnimationState, AnimationState),
     pub current: AnimationState,
     pub requested: Option<AnimationState>,
+    /// Cast button held: Shoot loops instead of chaining into Exit
+    pub casting: bool,
     /// AnimationState → Graph node
     pub nodes: Vec<AnimationNodeIndex>,
     /// Entity that owns AnimationPlayer
@@ -297,6 +327,7 @@ impl Default for Animations {
             // state: (AnimationState::StandIdle, AnimationState::StandIdle),
             current: AnimationState::StandIdle,
             requested: None,
+            casting: false,
             nodes: Vec::new(),
             animation_player_e: Entity::PLACEHOLDER,
         }
@@ -366,10 +397,14 @@ impl Animations {
         self.request(AnimationState::Land);
     }
 
-    /// Starts the Enter→Shoot→Exit cast sequence; `animate` chains the rest and fires
-    /// [`SpellShootFrame`] the instant the Shoot node begins.
+    /// Starts the Enter→Shoot→Exit cast sequence; `animate` chains the rest, looping Shoot
+    /// until [`Self::stop_casting`], and fires [`SpellShootFrame`] each time Shoot begins.
     pub fn cast_spell(&mut self) {
+        self.casting = true;
         self.request(AnimationState::SpellEnter);
+    }
+    pub fn stop_casting(&mut self) {
+        self.casting = false;
     }
 }
 

@@ -3,14 +3,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![recursion_limit = "256"]
 
-use bevy::log::tracing_subscriber::{field::MakeExt, fmt};
-use bevy::{
-    app::App, asset::AssetMetaCheck, asset::load_internal_binary_asset, ecs::error::error, log,
-    prelude::*, settings::SettingsPlugin, window::PrimaryWindow, winit::WINIT_WINDOWS,
-};
-use winit::window::Icon;
-
 use std::io::Cursor;
+
+use bevy::app::App;
+use bevy::asset::{AssetMetaCheck, load_internal_binary_asset};
+use bevy::ecs::error::error;
+use bevy::log::tracing_subscriber::{field::MakeExt, fmt};
+use bevy::render::error_handler::{ErrorType, RenderErrorHandler, RenderErrorPolicy};
+use bevy::settings::SettingsPlugin;
+use bevy::window::PrimaryWindow;
+use bevy::winit::WINIT_WINDOWS;
+use bevy::{log, prelude::*};
+use winit::window::Icon;
 
 pub mod asset_loading;
 pub mod audio;
@@ -94,6 +98,15 @@ fn main() {
         |bytes: &[u8], _path: String| { Font::from_bytes(bytes.to_vec()) }
     );
 
+    // handle GPU errors
+    app.insert_resource(RenderErrorHandler(
+        |error, _main_world, _render_world| match error.ty {
+            ErrorType::DeviceLost => RenderErrorPolicy::Recover(default()),
+            ErrorType::OutOfMemory => RenderErrorPolicy::StopRendering,
+            ErrorType::Validation => RenderErrorPolicy::Ignore,
+            ErrorType::Internal => panic!(),
+        },
+    ));
     app.run();
 }
 

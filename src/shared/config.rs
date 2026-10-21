@@ -61,6 +61,8 @@ pub struct MovementPreset {
     pub sprint_factor: f32,
     pub crouch_factor: f32,
     pub dash_distance: f32,
+    pub air_jumps: u8,
+    pub wall_run_distance: f32,
     pub idle_to_run_threshold: f32,
 }
 

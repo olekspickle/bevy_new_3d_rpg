@@ -38,7 +38,10 @@ web-dev:
     bevy run --no-default-features --features web,dev web -U multi-threading
 
 hot:
-    dx serve --hot-patch --features dev_native
+    dx serve --hot-patch
+
+sysinfo:
+    cargo run --no-default-features --features dev_sysinfo,third_person
 
 tracy:
     cargo run --features debug --release

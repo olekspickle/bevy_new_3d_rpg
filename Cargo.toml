@@ -89,12 +89,16 @@ dev = [
     # "bevy/debug_glam_assert",       # when need to debug physics\collider issues
 ]
 dev_native = [
+    "dev_sysinfo",
+    "bevy/dynamic_linking",         # Improve compile times for dev builds by linking Bevy as a dynamic library.
+]
+# dev_native without dynamic linking, which stubs out bevy's sysinfo plugin (CPU/RAM in perf ui)
+dev_sysinfo = [
     "dev",
     "native",
     "bevy/dev",                     # Enable aggressive file watcher
     "custom_cursor",
     "bevy/bevy_remote",             # Enable remote protocol for 3rd party extensions and plugins
-    "bevy/dynamic_linking",         # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/embedded_watcher",        # Enable embedded asset hot reloading for native dev builds.
 ]
 enhanced = [
@@ -123,4 +127,5 @@ nonstandard_macro_braces = "warn"   # Make sure macros use their standard braces
 bevy_seedling = { git = "https://github.com/CorvusPrudens/bevy_seedling", branch = "master" }
 bevy_perf_ui = { git = "https://github.com/olekspickle/perf_ui" }
 bevy_third_person_camera = { git = "https://github.com/olekspickle/bevy_third_person_camera" }
+bevy_ahoy = { git = "https://github.com/olekspickle/bevy_ahoy" }
 

@@ -1,5 +1,6 @@
 use super::*;
 use bevy::ecs::{lifecycle::HookContext, world::DeferredWorld};
+use bevy_enhanced_input::prelude::Press;
 
 pub fn plugin(app: &mut App) {
     app.add_input_context::<PlayerInput>()
@@ -14,10 +15,6 @@ pub struct ZoomView;
 #[derive(InputAction)]
 #[action_output(bool)]
 pub struct Sprint;
-
-#[derive(InputAction)]
-#[action_output(bool)]
-pub struct Dash;
 
 #[derive(InputAction)]
 #[action_output(bool)]
@@ -60,6 +57,8 @@ impl PlayerInput {
                 ),
                 (
                     Action::<Jump>::new(),
+                    // ahoy reads every Fire; holding would burn all air jumps in one press
+                    Press::default(),
                     bindings![keys.jump[0], keys.jump[1], keys.jump[2], GamepadButton::South],
                 ),
                 (
@@ -68,6 +67,7 @@ impl PlayerInput {
                 ),
                 (
                     Action::<Dash>::new(),
+                    Press::default(),
                     bindings![keys.dash[0], keys.dash[1], keys.dash[2], GamepadButton::LeftTrigger],
                 ),
                 (

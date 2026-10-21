@@ -1,5 +1,6 @@
 use super::*;
 use bevy_ahoy::CharacterLook;
+use std::f32::consts::PI;
 
 /// Falling past this height (e.g. through a hole in the level) teleports the player back
 /// to the configured spawn point instead of leaving them to fall forever.
@@ -22,7 +23,7 @@ pub fn plugin(app: &mut App) {
     )
     .add_observer(handle_sprint_in)
     .add_observer(handle_sprint_out)
-    .add_observer(handle_dash)
+    .add_observer(face_dash_direction)
     .add_observer(handle_jump)
     .add_observer(handle_land)
     //  .add_observer(handle_attack)
@@ -56,11 +57,16 @@ fn movement(
 }
 
 fn handle_sprint_in(
-    on: On<Start<Sprint>>,
+    on: On<Fire<Sprint>>,
     cfg: Res<Config>,
+    navigate: Single<&Action<Movement>>,
     mut ahoy_q: Query<&mut CharacterController>,
 ) -> Result {
     let entity = on.context;
+    // fires every frame while held; reset only happens on movement Complete, so skip idle
+    if ***navigate == Vec2::ZERO {
+        return Ok(());
+    }
     if let Ok(mut ahoy) = ahoy_q.get_mut(entity)
         && ahoy.speed == cfg.player.movement.speed()
     {
@@ -83,23 +89,22 @@ fn handle_sprint_out(
     }
 }
 
-fn handle_dash(
+fn face_dash_direction(
     on: On<Start<Dash>>,
     navigate: Single<&Action<Movement>>,
-    camera: Query<&Transform, With<SceneCamera>>,
-    mut player_q: Query<&mut Player>,
-    mut commands: Commands,
+    camera: Single<&Transform, With<SceneCamera>>,
+    mut player_q: Query<(&mut Transform, &mut CharacterLook), Without<SceneCamera>>,
 ) -> Result {
-    let navigate = **navigate.into_inner();
-    for player in player_q.iter_mut() {
-        debug!("Dashing player: on-{},id-{}", on.context, player.id);
-        let cam_transform = camera.single()?;
-        let direction = cam_transform.movement_direction(navigate);
-        commands.entity(player.id).insert(Dashing::new(direction));
+    let (mut pos, mut look) = player_q.get_mut(on.context)?;
+    let input_dir = camera.movement_direction(***navigate);
+    if input_dir != Vec3::ZERO {
+        // snap so the roll faces where we dash
+        pos.rotation = Quat::from_rotation_y(input_dir.x.atan2(input_dir.z));
+    } else {
+        // without input ahoy dashes along the look, so aim it where the model (+Z) faces
+        let (yaw, _, _) = pos.rotation.to_euler(EulerRot::YXZ);
+        look.yaw = yaw + PI;
     }
-
-    // TODO: dash
-
     Ok(())
 }
 
@@ -167,21 +172,6 @@ fn respawn_if_fallen(
             transform.translation = Vec3::from(cfg.player.spawn_pos);
             *velocity = LinearVelocity(Vec3::ZERO);
             *state = CharacterControllerState::default();
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Dashing {
-    pub start: Instant,
-    pub direction: Vec3,
-}
-
-impl Dashing {
-    fn new(direction: Vec3) -> Self {
-        Self {
-            start: Instant::now(),
-            direction,
         }
     }
 }
