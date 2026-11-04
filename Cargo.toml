@@ -126,7 +126,7 @@ nonstandard_macro_braces = "warn"   # Make sure macros use their standard braces
 [patch.crates-io]
 bevy_seedling = { git = "https://github.com/CorvusPrudens/bevy_seedling", branch = "master" }
 bevy_perf_ui = { git = "https://github.com/olekspickle/perf_ui" }
-bevy_third_person_camera = { git = "https://github.com/olekspickle/bevy_third_person_camera", branch = "bevy-0.19" }
+bevy_third_person_camera = { path = "../../Documents/rust/bevy_third_person_camera" }
 bevy_ahoy = { git = "https://github.com/olekspickle/bevy_ahoy" }
 # bevy_ahoy = { path = "../../Documents/rust/bevy_ahoy" }
 

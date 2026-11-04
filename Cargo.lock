@@ -2238,7 +2238,6 @@ dependencies = [
 [[package]]
 name = "bevy_third_person_camera"
 version = "0.4.0"
-source = "git+https://github.com/olekspickle/bevy_third_person_camera?branch=bevy-0.19#3528aa46b080d23e45a3391d510111fef547dd85"
 dependencies = [
  "avian3d",
  "bevy",

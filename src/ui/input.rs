@@ -81,10 +81,6 @@ impl ModalInput {
                 ),
                 (
                     Action::<NavigateModal>::new(),
-                    ActionSettings {
-                        require_reset: true,
-                        ..Default::default()
-                    },
                     // screen y grows downward
                     Bindings::spawn(Axial::right_stick().with((DeadZone::default(), Negate::y()))),
                 ),
@@ -98,7 +94,7 @@ impl ModalInput {
                         require_reset: true,
                         ..Default::default()
                     },
-                    bindings![KeyCode::Escape, GamepadButton::West],
+                    bindings![KeyCode::Escape, GamepadButton::East],
                 )
             ]));
     }
@@ -144,7 +140,8 @@ fn hide_gamepad_cursor(
 }
 
 fn move_gamepad_cursor(
-    time: Res<Time>,
+    // menus pause virtual time
+    time: Res<Time<Real>>,
     navigate: Query<&Action<NavigateModal>>,
     window: Single<(Entity, &Window), With<PrimaryWindow>>,
     cursor: Single<(&mut Node, &mut Visibility, &PointerLocation), With<GamepadCursor>>,
